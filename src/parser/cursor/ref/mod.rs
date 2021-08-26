@@ -1,5 +1,4 @@
-pub mod add;
 pub mod eq;
-pub mod iter;
-pub mod ord;
-pub mod position;
+pub mod iterator;
+pub mod partialord;
+pub mod refcursor;
