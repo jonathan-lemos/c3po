@@ -1,15 +1,15 @@
 use super::super::cursor::Cursor;
-use super::ownedcursor::OwnedCursor;
+use super::refcursor::RefCursor;
 
-impl<TLexeme: Clone + Send + Sync> Cursor for OwnedCursor<TLexeme> {
+impl<TLexeme: Clone + Send + Sync> Cursor for RefCursor<'_, TLexeme> {
     type Lexeme = TLexeme;
 
     fn next_immut(&self) -> Option<Self> {
-        if self.lexemes.len() <= self.pos {
+        if self.source.len() <= self.pos {
             None
         } else {
-            Some(OwnedCursor {
-                lexemes: self.lexemes.clone(),
+            Some(RefCursor {
+                source: self.source,
                 pos: self.pos + 1
             })
         }
@@ -20,6 +20,6 @@ impl<TLexeme: Clone + Send + Sync> Cursor for OwnedCursor<TLexeme> {
     }
 
     fn source(&self) -> &[Self::Lexeme] {
-        &self.lexemes
+        self.source
     }
 }

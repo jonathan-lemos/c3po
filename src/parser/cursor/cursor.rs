@@ -1,3 +1,4 @@
+use std::iter::FromIterator;
 use super::iter::cursoriterator::CursorIterator;
 use std::cmp::min;
 
@@ -10,6 +11,15 @@ use std::cmp::min;
 /// 
 pub trait Cursor: Clone + Send + Sync {
     type Lexeme: Send + Sync;
+
+    /// A Cursor pointing to the next lexeme, or `None` if there isn't one.
+    fn next_immut(&self) -> Option<Self>;
+
+    /// The 0-based index of the cursor within the `source()`.
+    fn pos(&self) -> usize;
+
+    /// The sequence of lexemes that the cursor is pointing to.
+    fn source(&self) -> &[Self::Lexeme];
 
     /// The lexeme under the cursor.
     fn current(&self) -> &Self::Lexeme {
@@ -27,12 +37,31 @@ pub trait Cursor: Clone + Send + Sync {
         CursorIterator::new(self)
     }
 
-    /// A Cursor pointing to the next lexeme, or `None` if there isn't one.
-    fn next_immut(&self) -> Option<Self>;
+    /// A `Vec` of exactly `n` cursors including this one, or `None` if `remaining() < n`.
+    fn require_n(&self, n: usize) -> Option<Vec<Self>> {
+        let cursors: Vec<Self> = self.up_to_n(n);
 
-    /// The 0-based index of the cursor within the `source()`.
-    fn pos(&self) -> usize;
+        if cursors.len() != n {
+            None
+        } else {
+            Some(cursors)
+        }
+    }
 
-    /// The sequence of lexemes that the cursor is pointing to.
-    fn source(&self) -> &[Self::Lexeme];
+    /// How many lexemes are there from this Cursor `pos()` and beyond?
+    fn remaining(&self) -> usize {
+        self.source().len() - self.pos()
+    }
+
+    /// A `FromIterator` of `min(n, remaining())` Cursors including this one.
+    fn up_to_n<B: FromIterator<Self>>(&self, n: usize) -> B {
+        let cursors = (0..n - 1)
+                        .scan(Some(self.clone()),
+                            |a, _| {
+                                *a = a.and_then(|v| v.next_immut());
+                                *a
+                            });
+
+        cursors.collect()
+    }
 }

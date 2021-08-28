@@ -1,10 +1,10 @@
-use super::position::Position;
+use super::refcursor::RefCursor;
 use std::ptr;
 
-impl<TLexeme> PartialEq for Position<'_, TLexeme> {
+impl<TLexeme> PartialEq for RefCursor<'_, TLexeme> {
     fn eq(&self, other: &Self) -> bool {
-        ptr::eq(self.input, other.input) && ptr::eq(self.source, other.source) && self.pos == other.pos
+        ptr::eq(self.source, other.source) && self.pos == other.pos
     }
 }
 
-impl<TLexeme> Eq for Position<'_, TLexeme> {}
+impl<TLexeme> Eq for RefCursor<'_, TLexeme> {}

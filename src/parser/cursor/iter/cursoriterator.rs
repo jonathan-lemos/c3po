@@ -10,6 +10,4 @@ impl<TLexeme, TCursor: Cursor<Lexeme = TLexeme>> CursorIterator<TLexeme, TCursor
             cursor: Some(cursor.clone())
         }
     }
-
-    pub fn next_n(n: usize) -> Option<>
 }
