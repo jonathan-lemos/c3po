@@ -1,14 +1,14 @@
-use std::iter::FromIterator;
 use super::iter::cursoriterator::CursorIterator;
 use std::cmp::min;
+use std::iter::FromIterator;
 
 /// Represents a position within a sequence of lexemes.
-/// 
+///
 /// A lexeme is a fundamental unit in your language e.g. words, punctuation for English, identifiers, keywords, punctuation for most programming languages.
 /// Use `TLexeme = char` for a simple string parser.
-/// 
+///
 /// Cursors should be immutable and cloneable so they can be safely reused across functions/threads.
-/// 
+///
 pub trait Cursor: Clone + Send + Sync {
     type Lexeme: Send + Sync;
 
@@ -55,12 +55,17 @@ pub trait Cursor: Clone + Send + Sync {
 
     /// A `FromIterator` of `min(n, remaining())` Cursors including this one.
     fn up_to_n<B: FromIterator<Self>>(&self, n: usize) -> B {
-        let cursors = (0..n - 1)
-                        .scan(Some(self.clone()),
-                            |a, _| {
-                                *a = a.and_then(|v| v.next_immut());
-                                *a
-                            });
+        let cursors = (0..n - 1).scan(Some(self.clone()), |a, _| {
+            *a = match a {
+                None => None,
+                Some(s) => s.next_immut(),
+            };
+
+            match a {
+                None => None,
+                Some(s) => s.next_immut(),
+            }
+        });
 
         cursors.collect()
     }

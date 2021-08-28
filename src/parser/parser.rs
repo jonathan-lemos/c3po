@@ -1,20 +1,21 @@
 use super::cursor::cursor::Cursor;
 use super::parse::parse::Parse;
 
-pub struct Parser<'f, TLexeme: 'f, TCursor: Cursor<Lexeme = TLexeme> + 'f, TOutput: 'f> {
-    pub(super) func: Box<dyn Fn(&TCursor) -> Parse<TLexeme, TCursor, TOutput> + 'f>,
+#[derive(Clone)]
+pub struct Parser<TLexeme, TCursor: Cursor<Lexeme = TLexeme>, TOutput> {
+    pub(super) func: fn(&TCursor) -> Parse<TLexeme, TCursor, TOutput>,
     pub(super) kind: String
 }
 
-impl<'f, TLexeme, TCursor: Cursor<Lexeme = TLexeme>, TOutput> Parser<'f, TLexeme, TCursor, TOutput> {
+impl<TLexeme, TCursor: Cursor<Lexeme = TLexeme>, TOutput> Parser<TLexeme, TCursor, TOutput> {
     /// Creates a new parser
     /// 
     /// # Arguments
     /// * func - A function taking a `&Cursor` input, and returning a `Result` with a value on success, and an error message on failure.
     /// * kind - An `AsRef<str>` describing the kind of values this parser accepts e.g. comma, identifier, keyword, number, string, etc.
-    fn new<F: Fn(&TCursor) -> Parse<TLexeme, TCursor, TOutput> + 'f, S: AsRef<str>>(func: F, kind: S) -> Self {
+    fn new<S: AsRef<str>>(func: fn(&TCursor) -> Parse<TLexeme, TCursor, TOutput>, kind: S) -> Self {
         Parser {
-            func: Box::new(func),
+            func,
             kind: kind.as_ref().to_string()
         }
     }
@@ -23,6 +24,17 @@ impl<'f, TLexeme, TCursor: Cursor<Lexeme = TLexeme>, TOutput> Parser<'f, TLexeme
     /// 
     /// To get the next token beyond a successful parse, get the `next_immut()` of the returned `SuccessfulParse::end()`
     fn parse(&self, cursor: &TCursor) -> Parse<TLexeme, TCursor, TOutput> {
-        (*self.func)(cursor)
+        (self.func)(cursor)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use super::super::cursor::reference::refcursor::RefCursor;
+
+    #[test]
+    fn parser_implements_send_sync() {
+        assert_impl_all!(Parser<char, RefCursor<char>, String>: Send, Sync);
     }
 }

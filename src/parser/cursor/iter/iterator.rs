@@ -7,10 +7,13 @@ impl<TLexeme: Clone, TCursor: Cursor<Lexeme = TLexeme>> Iterator
     type Item = TCursor;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.cursor.map(|c| {
-            let current = c.current();
-            self.cursor = c.next_immut();
-            c
-        })
+        let (next, prev) = match &self.cursor {
+            None => (None, None),
+            Some(c) => {
+                (c.next_immut(), Some(c.clone()))
+            }
+        };
+        self.cursor = next;
+        prev
     }
 }

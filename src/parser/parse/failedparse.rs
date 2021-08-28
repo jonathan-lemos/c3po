@@ -1,12 +1,12 @@
 use super::super::cursor::cursor::Cursor;
 
 /// Represents a failed parse result. See the `Parse` enum for details.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FailedParse<TLexeme, TCursor: Cursor<Lexeme = TLexeme>> {
-    bad_token: TCursor,
-    beginning: TCursor,
-    kind: String,
-    reason: String,
+    pub(super) bad_token: TCursor,
+    pub(super) beginning: TCursor,
+    pub(super) kind: String,
+    pub(super) reason: String,
 }
 
 impl<TLexeme, TCursor: Cursor<Lexeme = TLexeme>> FailedParse<TLexeme, TCursor> {
