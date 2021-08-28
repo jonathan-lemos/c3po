@@ -3,29 +3,29 @@ use super::super::cursor::cursor::Cursor;
 /// Represents a successful parse result. See the `Parse` enum for details.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SuccessfulParse<TLexeme, TCursor: Cursor<Lexeme = TLexeme>, TValue> {
-    pub(super) beginning: TCursor,
     pub(super) end: TCursor,
-    pub(super) kind: String,
     pub(super) value: TValue
 }
 
 impl<TLexeme, TCursor: Cursor<Lexeme = TLexeme>, TValue> SuccessfulParse<TLexeme, TCursor, TValue> {
-    /// Returns the first lexeme of the result.
-    pub fn beginning(&self) -> &TCursor {
-        &self.beginning
+    /// Creates a SuccessfulParse
+    /// 
+    /// # Arguments
+    /// * `end`   - The last parsed lexeme.
+    /// * `value` - The parsed value.
+    pub fn new<V: Into<TValue>>(end: TCursor, value: V) -> Self {
+        SuccessfulParse {
+            end: end,
+            value: value.into()
+        }
     }
 
-    /// Returns the last lexeme of the result.
+    /// A Cursor pointing to the last parsed lexeme.
     pub fn end(&self) -> &TCursor {
         &self.end
     }
 
-    /// Returns the kind of value this result contains.
-    pub fn kind(&self) -> &str {
-        &self.kind
-    }
-
-    /// Returns the value of the result.
+    /// The parsed value.
     pub fn value(&self) -> &TValue {
         &self.value
     }

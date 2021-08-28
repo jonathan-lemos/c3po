@@ -61,10 +61,7 @@ pub trait Cursor: Clone + Send + Sync {
                 Some(s) => s.next_immut(),
             };
 
-            match a {
-                None => None,
-                Some(s) => s.next_immut(),
-            }
+            a.clone()
         });
 
         cursors.collect()

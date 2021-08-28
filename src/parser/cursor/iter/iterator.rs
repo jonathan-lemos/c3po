@@ -17,3 +17,19 @@ impl<TLexeme: Clone, TCursor: Cursor<Lexeme = TLexeme>> Iterator
         prev
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use super::super::super::owned::ownedcursor::OwnedCursor;
+
+    #[test]
+    fn cursoriterator_iterates() {
+        let chars = vec!['a', 'b', 'c'];
+        let cursor = OwnedCursor::new(chars.clone().into_iter());
+        let it = cursor.iter();
+
+        let result: Vec<char> = it.map(|c| *c.current()).collect();
+        assert_eq!(chars, result);
+    }
+}

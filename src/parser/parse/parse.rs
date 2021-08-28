@@ -13,15 +13,11 @@ impl<TLexeme, TCursor: Cursor<Lexeme = TLexeme>, TValue> Parse<TLexeme, TCursor,
     /// Creates a successful parsing result.
     /// 
     /// # Arguments
-    /// * beginning - A cursor pointing to the first lexeme of the parse.
     /// * end       - A cursor pointing to the last lexeme of the parse.
-    /// * kind      - The kind of value this is e.g. comma, identifier, keyword, number, string, etc..
     /// * value     - The parsed value.
-    fn success<S: AsRef<str>, V: Into<TValue>>(beginning: TCursor, end: TCursor, kind: S, value: V) -> Self {
+    pub fn success(end: TCursor, value: TValue) -> Self {
         Parse::Success(SuccessfulParse {
-            beginning,
             end,
-            kind: kind.as_ref().to_string(),
             value: value.into()
         })
     }
@@ -29,15 +25,54 @@ impl<TLexeme, TCursor: Cursor<Lexeme = TLexeme>, TValue> Parse<TLexeme, TCursor,
     /// Creates a failed parsing result.
     /// 
     /// # Arguments
-    /// * beginning - A cursor pointing to the first lexeme of the parse.
     /// * bad_token - A cursor pointing to the first unparseable lexeme.
     /// * reason    - The reason why the parse couldn't succeed.
-    fn failure<A: AsRef<str>, B: AsRef<str>>(beginning: TCursor, bad_token: TCursor, kind: A, reason: B) -> Self {
+    pub fn failure<S: Into<String>>(bad_token: TCursor, reason: S) -> Self {
         Parse::Failure(FailedParse {
-            beginning,
             bad_token,
-            kind: kind.as_ref().to_string(),
-            reason: reason.as_ref().to_string()
+            reason: reason.into()
         })
+    }
+
+    /// Unwraps a SuccessfulParse if the parse succeeded. Panics with the given message if it failed.
+    pub fn expect<S: AsRef<str>>(self, if_not: S) -> SuccessfulParse<TLexeme, TCursor, TValue> {
+        match self {
+            Parse::Success(s) => s,
+            Parse::Failure(f) => panic!("Expected a successful parse, but it failed due to {}.\nMessage: {}", f.reason(), if_not.as_ref())
+        }
+    }
+
+    /// Unwraps a FailedParse if the parse failed. Panics with the given message if it succeeded.
+    pub fn expect_failure<S: AsRef<str>>(self, if_not: S) -> FailedParse<TLexeme, TCursor> {
+        match self {
+            Parse::Failure(f) => f,
+            Parse::Success(s) => panic!("Expected a failed parse, but it succeeded with ending at position {}.\nMessage: {}", s.end().pos(), if_not.as_ref())
+        }
+    }
+
+    /// `true` if the Parse failed, `false` if not.
+    pub fn is_failure(&self) -> bool {
+        match self {
+            Parse::Failure(_) => true,
+            Parse::Success(_) => false
+        }
+    }
+
+    /// `true` if the Parse succeeded, `false` if not.
+    pub fn is_success(&self) -> bool {
+        match self {
+            Parse::Success(_) => true,
+            Parse::Failure(_) => false
+        }
+    }
+
+    /// Unwraps a SuccessfulParse if the parse succeeded. Panics if it failed.
+    pub fn unwrap(self) -> SuccessfulParse<TLexeme, TCursor, TValue> {
+        self.expect("unwrap() called on a failed parse.")
+    }
+
+    /// Unwraps a FailedParse if the parse failed. Panics if it succeeded.
+    pub fn unwrap_failure(self) -> FailedParse<TLexeme, TCursor> {
+        self.expect_failure("unwrap_err() called on a successful parse.S")
     }
 }

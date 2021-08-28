@@ -19,3 +19,17 @@ impl<TLexeme: Clone> OwnedCursor<TLexeme> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use super::super::super::cursor::Cursor;
+
+    #[test]
+    fn new_ownedcursor_gets_first_char() {
+        let cursor: OwnedCursor<char> = From::from("ab");
+        let char = *cursor.current();
+
+        assert_eq!(char, 'a')
+    }
+}
