@@ -2,18 +2,18 @@ use super::super::cursor::cursor::Cursor;
 
 /// Represents a failed parse result. See the `Parse` enum for details.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FailedParse<TLexeme, TCursor: Cursor<Lexeme = TLexeme>> {
-    pub(super) bad_token: TCursor,
+pub struct FailedParse<'a, TLexeme> {
+    pub(super) bad_token: Cursor<'a, TLexeme>,
     pub(super) reason: String,
 }
 
-impl<TLexeme, TCursor: Cursor<Lexeme = TLexeme>> FailedParse<TLexeme, TCursor> {
+impl<'a, TLexeme> FailedParse<'a, TLexeme> {
     /// Creates a FailedParse
     /// 
     /// # Arguments
     /// * `bad_token` - A Cursor pointing to the first unparseable token.
     /// * `reason`    - A reason why the lexemes couldn't be parsed.
-    pub fn new<S: Into<String>>(bad_token: TCursor, reason: S) -> Self {
+    pub fn new<S: Into<String>>(bad_token: Cursor<'a, TLexeme>, reason: S) -> Self {
         FailedParse {
             bad_token,
             reason: reason.into()
@@ -21,7 +21,7 @@ impl<TLexeme, TCursor: Cursor<Lexeme = TLexeme>> FailedParse<TLexeme, TCursor> {
     }
 
     /// A Cursor pointing to the first unparseable lexeme.
-    pub fn bad_token(&self) -> &TCursor {
+    pub fn bad_token(&self) -> &Cursor<'a, TLexeme> {
         &self.bad_token
     }
 

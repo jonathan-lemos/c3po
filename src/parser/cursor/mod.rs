@@ -1,4 +1,4 @@
+pub mod add;
 pub mod cursor;
-pub mod iter;
-pub mod owned;
-pub mod reference;
+pub mod eq;
+pub mod partialord;

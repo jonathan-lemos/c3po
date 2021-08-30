@@ -1,69 +1,59 @@
-use super::iter::cursoriterator::CursorIterator;
-use std::cmp::min;
-use std::iter::FromIterator;
+use std::ptr;
 
-/// Represents a position within a sequence of lexemes.
-///
-/// A lexeme is a fundamental unit in your language e.g. words, punctuation for English, identifiers, keywords, punctuation for most programming languages.
-/// Use `TLexeme = char` for a simple string parser.
-///
-/// Cursors should be immutable and cloneable so they can be safely reused across functions/threads.
-///
-pub trait Cursor: Clone + Send + Sync {
-    type Lexeme: Send + Sync;
+/// Represents a position in a slice of lexemes.
+#[derive(Debug, Clone, Copy)]
+pub struct Cursor<'a, TLexeme> {
+    pub(super) source: &'a [TLexeme],
+    pub(super) pos: usize,
+}
 
-    /// A Cursor pointing to the next lexeme, or `None` if there isn't one.
-    fn next_immut(&self) -> Option<Self>;
-
-    /// The 0-based index of the cursor within the `source()`.
-    fn pos(&self) -> usize;
-
-    /// The sequence of lexemes that the cursor is pointing to.
-    fn source(&self) -> &[Self::Lexeme];
-
-    /// The lexeme under the cursor.
-    fn current(&self) -> &Self::Lexeme {
-        &self.source()[self.pos()]
-    }
-
-    /// The current lexeme and all lexemes beyond.
-    fn input(&self) -> &[Self::Lexeme] {
-        let pos = min(self.pos(), self.source().len());
-        &self.source()[pos..]
-    }
-
-    /// Yields this Cursor and all subsequent Cursors.
-    fn iter(&self) -> CursorIterator<Self::Lexeme, Self> {
-        CursorIterator::new(self)
-    }
-
-    /// A `Vec` of exactly `n` cursors including this one, or `None` if `remaining() < n`.
-    fn require_n(&self, n: usize) -> Option<Vec<Self>> {
-        let cursors: Vec<Self> = self.up_to_n(n);
-
-        if cursors.len() != n {
+impl<'a, TLexeme> Cursor<'a, TLexeme> {
+    /// Creates a new Cursor at the beginning of a slice of lexemes.
+    ///
+    /// Returns `None` if the input slice is empty.
+    pub fn new(lexemes: &'a [TLexeme]) -> Option<Self> {
+        if lexemes.len() == 0 {
             None
         } else {
-            Some(cursors)
+            Some(Self {
+                source: lexemes,
+                pos: 0,
+            })
         }
     }
 
-    /// How many lexemes are there from this Cursor `pos()` and beyond?
-    fn remaining(&self) -> usize {
-        self.source().len() - self.pos()
+    /// Gets the lexeme that this Cursor is pointing to.
+    pub fn current(&self) -> &TLexeme {
+        &self.source[self.pos]
     }
 
-    /// A `FromIterator` of `min(n, remaining())` Cursors including this one.
-    fn up_to_n<B: FromIterator<Self>>(&self, n: usize) -> B {
-        let cursors = (0..n - 1).scan(Some(self.clone()), |a, _| {
-            *a = match a {
-                None => None,
-                Some(s) => s.next_immut(),
-            };
+    /// Gets the amount of `next_immut()` calls needed to reach one Cursor from the other.
+    /// 
+    /// Returns `None` if the two cursors have different sources.
+    pub fn difference(&self, other: &Self) -> Option<usize> {
+        if ptr::eq(self.source, other.source) {
+            Some(if self.pos >= other.pos {
+                self.pos - other.pos
+            } else {
+                other.pos - self.pos
+            })
+        } else {
+            None
+        }
+    }
 
-            a.clone()
-        });
+    /// Creates the Cursor pointing to the next lexeme if there is one.
+    pub fn next_immut(&'a self) -> Option<Self> {
+        self + 1
+    }
 
-        cursors.collect()
+    /// Gets the 0-based position of the cursor within the `source()`.
+    pub fn pos(&self) -> usize {
+        self.pos
+    }
+
+    /// Gets the source slice that the cursor is pointing to.
+    pub fn source(&self) -> &[TLexeme] {
+        self.source
     }
 }
