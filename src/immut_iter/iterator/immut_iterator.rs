@@ -1,14 +1,23 @@
 use super::super::immut_iterable::ImmutableIterable;
 
+/// Iterator for an `ImmutableIterable`
 #[derive(Debug, Clone, Copy)]
-pub enum ImmutableIterator<'a, I: ImmutableIterable> {
-    Reference(&'a I),
-    Owned(I),
-    Empty
+pub struct ImmutableIterator<I: ImmutableIterable> {
+    pub(super) iterable: Option<I>
 }
 
-impl<'a, I: ImmutableIterable> ImmutableIterator<'a, I> {
-    pub fn new(iterable: &'a I) -> Self {
-        ImmutableIterator::Reference(iterable)
+impl<I: ImmutableIterable> ImmutableIterator<I> {
+    /// Creates a new `ImmutableIterator` from the given `ImmutableIterable`
+    pub fn new(iterable: I) -> Self {
+        ImmutableIterator {
+            iterable: Some(iterable)
+        }
+    }
+
+    /// Creates a new `ImmutableIterator` from the given `Option<ImmutableIterable>`. `None` will produce an empty iterator.
+    pub fn from_option(option: Option<I>) -> Self {
+        ImmutableIterator {
+            iterable: option
+        }
     }
 }

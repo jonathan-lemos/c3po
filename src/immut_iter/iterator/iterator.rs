@@ -1,21 +1,18 @@
 use super::super::immut_iterable::ImmutableIterable;
 use super::immut_iterator::ImmutableIterator;
 
-impl<'a, I: ImmutableIterable> Iterator for ImmutableIterator<'a, I> {
-    type Item = &'a I;
+impl<I: ImmutableIterable> Iterator for ImmutableIterator<I> {
+    type Item = I;
 
-    fn next(&'a mut self) -> Option<Self::Item> {
-        let ret = match &self {
-            ImmutableIterator::Empty => return None,
-            ImmutableIterator::Owned(v) => v,
-            ImmutableIterator::Reference(r) => *r
-        };
-
-        *self = match ret.next_immut() {
-            Some(next) => ImmutableIterator::Owned(next),
-            None => ImmutableIterator::Empty
-        };
-
-        Some(ret)
+    fn next(&mut self) -> Option<Self::Item> {
+        match &self.iterable {
+            None => None,
+            Some(v) => {
+                match v.next_immut() {
+                    None => self.iterable.take(),
+                    Some(next) => self.iterable.replace(next)
+                }
+            }
+        }
     }
 }

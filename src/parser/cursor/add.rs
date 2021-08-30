@@ -9,7 +9,7 @@ impl<TLexeme> Add<usize> for Cursor<'_, TLexeme> {
     /// Returns `None` if the new position of the cursor is out-of-bounds.
     fn add(self, n: usize) -> Self::Output {
         let new_pos = self.pos + n;
-        if n >= self.source.len() {
+        if new_pos >= self.source.len() {
             None
         } else {
             Some(Self {
@@ -20,7 +20,7 @@ impl<TLexeme> Add<usize> for Cursor<'_, TLexeme> {
     }
 }
 
-impl<'a, TLexeme> Add<usize> for &'a Cursor<'_, TLexeme> {
+impl<'a, TLexeme> Add<usize> for &Cursor<'a, TLexeme> {
     type Output = Option<Cursor<'a, TLexeme>>;
 
     /// Increments the Cursor by `n` lexemes
@@ -28,7 +28,7 @@ impl<'a, TLexeme> Add<usize> for &'a Cursor<'_, TLexeme> {
     /// Returns `None` if the new position of the cursor is out-of-bounds.
     fn add(self, n: usize) -> Self::Output {
         let new_pos = self.pos + n;
-        if n >= self.source.len() {
+        if new_pos >= self.source.len() {
             None
         } else {
             Some(Cursor {

@@ -1,7 +1,7 @@
 use std::ptr;
 
 /// Represents a position in a slice of lexemes.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 pub struct Cursor<'a, TLexeme> {
     pub(super) source: &'a [TLexeme],
     pub(super) pos: usize,

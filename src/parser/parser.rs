@@ -2,7 +2,7 @@ use super::cursor::cursor::Cursor;
 use super::parse::parse::Parse;
 use super::output::output::ParserOutput;
 
-#[derive(Clone)]
+/// Parses a value of `TOutput` starting from a given `Cursor<TLexeme>`.
 pub struct Parser<'a, TLexeme, TOutput> {
     pub(super) func: fn(&'a Cursor<TLexeme>) -> Parse<'a, TLexeme, TOutput>,
     pub(super) kind: String
@@ -43,7 +43,7 @@ mod tests {
     #[test]
     fn parser_returns_successful_parse_on_success() {
         let chars: Vec<char> = "ab".chars().collect();
-        let cursor = Cursor::new(chars);
+        let cursor = Cursor::new(&chars).unwrap();
 
         let parser = Parser::new(|c| {
             Parse::success(c.next_immut().unwrap(), "test value")
