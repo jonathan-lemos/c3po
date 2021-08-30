@@ -1,6 +1,6 @@
 use super::parser::Parser;
 
-impl<'a, TLexeme, TOutput> Clone for Parser<'a, TLexeme, TOutput> {
+impl<'a, TLexeme, TOutput> Clone for Parser<TLexeme, TOutput> {
     fn clone(&self) -> Self {
         Parser {
             func: self.func,

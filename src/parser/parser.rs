@@ -3,18 +3,18 @@ use super::parse::parse::Parse;
 use super::output::output::ParserOutput;
 
 /// Parses a value of `TOutput` starting from a given `Cursor<TLexeme>`.
-pub struct Parser<'a, TLexeme, TOutput> {
-    pub(super) func: fn(&'a Cursor<TLexeme>) -> Parse<'a, TLexeme, TOutput>,
+pub struct Parser<TLexeme, TOutput> {
+    pub(super) func: for<'a> fn(&'a Cursor<TLexeme>) -> Parse<'a, TLexeme, TOutput>,
     pub(super) kind: String
 }
 
-impl<'a, TLexeme, TOutput> Parser<'a, TLexeme, TOutput> {
+impl<TLexeme, TOutput> Parser<TLexeme, TOutput> {
     /// Creates a new parser
     /// 
     /// # Arguments
     /// * func - A function taking a `&Cursor` input, and returning a `Result` with a value on success, and an error message on failure.
     /// * kind - An `AsRef<str>` describing the kind of values this parser accepts e.g. comma, identifier, keyword, number, string, etc.
-    fn new<S: Into<String>>(func: fn(&'a Cursor<TLexeme>) -> Parse<'a, TLexeme, TOutput>, kind: S) -> Self {
+    fn new<S: Into<String>>(func: for<'a> fn(&'a Cursor<TLexeme>) -> Parse<'a, TLexeme, TOutput>, kind: S) -> Self {
         Parser {
             func,
             kind: kind.into()
@@ -24,7 +24,7 @@ impl<'a, TLexeme, TOutput> Parser<'a, TLexeme, TOutput> {
     /// Parses a value starting at the given cursor.
     /// 
     /// To get the next token beyond a successful parse, get the `next_immut()` of the returned `SuccessfulParse::end()`
-    fn parse(&self, cursor: &'a Cursor<TLexeme>) -> ParserOutput<'a, TLexeme, TOutput> {
+    fn parse<'a>(&self, cursor: &'a Cursor<TLexeme>) -> ParserOutput<'a, TLexeme, TOutput> {
         let parse = (self.func)(cursor);
         ParserOutput::new(parse, *cursor, &self.kind)
     }
