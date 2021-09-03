@@ -15,3 +15,42 @@ impl<TLexeme> PartialOrd for Cursor<'_, TLexeme> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn equal_cursors_are_equal() {
+        let seq = vec![1, 2, 3];
+
+        let c1 = Cursor::new(&seq).unwrap();
+        let c2 = c1.clone();
+
+        let ordering = PartialOrd::partial_cmp(&c1, &c2);
+        assert_eq!(ordering, Some(Ordering::Equal));
+    }
+
+    fn further_cursor_is_greater() {
+        let seq = vec![1, 2, 3];
+
+        let c1 = Cursor::new(&seq).unwrap();
+        let c2 = (c1 + 1).unwrap();
+
+        let ordering = PartialOrd::partial_cmp(&c2, &c1);
+        assert_eq!(ordering, Some(Ordering::Greater));
+
+        let ordering = PartialOrd::partial_cmp(&c1, &c2);
+        assert_eq!(ordering, Some(Ordering::Less));
+    }
+
+    fn different_cursors_dont_compare() {
+        let seq = vec![1, 2, 3];
+        let seq2 = vec![4, 5];
+
+        let c1 = Cursor::new(&seq).unwrap();
+        let c2 = Cursor::new(&seq2).unwrap();
+
+        let ordering = PartialOrd::partial_cmp(&c1, &c2);
+        assert!(ordering.is_none());
+    }
+}

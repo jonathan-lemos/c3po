@@ -6,3 +6,18 @@ impl<TLexeme> ImmutableIterable for Cursor<'_, TLexeme> {
         self + 1
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cursor_iterates_chars() {
+        let seq = vec![1, 2, 3];
+        let c = Cursor::new(&seq).unwrap();
+
+        let actual: Vec<i32> = c.iter_immut().map(|x| *x.current()).collect();
+
+        assert_eq!(seq, actual);
+    }
+}

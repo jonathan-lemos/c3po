@@ -42,11 +42,6 @@ impl<'a, TLexeme> Cursor<'a, TLexeme> {
         }
     }
 
-    /// Creates the Cursor pointing to the next lexeme if there is one.
-    pub fn next_immut(&'a self) -> Option<Self> {
-        self + 1
-    }
-
     /// Gets the 0-based position of the cursor within the `source()`.
     pub fn pos(&self) -> usize {
         self.pos
@@ -55,5 +50,22 @@ impl<'a, TLexeme> Cursor<'a, TLexeme> {
     /// Gets the source slice that the cursor is pointing to.
     pub fn source(&self) -> &[TLexeme] {
         self.source
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cursor_creates_on_not_empty() {
+        let vec = vec![1];
+        assert!(Cursor::new(&vec).is_some())
+    }
+
+    #[test]
+    fn cursor_doesnt_create_on_empty() {
+        let vec: Vec<char> = vec![];
+        assert!(Cursor::new(&vec).is_none())
     }
 }

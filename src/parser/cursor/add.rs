@@ -38,3 +38,33 @@ impl<'a, TLexeme> Add<usize> for &Cursor<'a, TLexeme> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cursor_add_1_goes_to_next_char() {
+        let chars = "0123".chars().collect::<Vec<char>>();
+        let c = Cursor::new(&chars).unwrap();
+
+        assert_eq!((c + 1).unwrap().current(), &'1')
+    }
+
+    #[test]
+    fn cursor_add_2_goes_to_third_char() {
+        let chars = "0123".chars().collect::<Vec<char>>();
+        let c = Cursor::new(&chars).unwrap();
+
+        assert_eq!((c + 2).unwrap().current(), &'2')
+    }
+
+    #[test]
+    fn cursor_overflow_is_none() {
+        let chars = "0123".chars().collect::<Vec<char>>();
+        let c = Cursor::new(&chars).unwrap();
+
+        assert!((c + 4).is_none());
+        assert!((c + 5).is_none());
+    }
+}

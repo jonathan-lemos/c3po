@@ -13,11 +13,11 @@ impl<'a, TLexeme, TValue> Parse<'a, TLexeme, TValue> {
     /// Creates a successful parsing result.
     /// 
     /// # Arguments
-    /// * end       - A cursor pointing to the last lexeme of the parse.
-    /// * value     - The parsed value.
-    pub fn success(end: Cursor<'a, TLexeme>, value: TValue) -> Self {
+    /// * `next`  - A cursor pointing to the next lexeme after the parsed section. `None` if this parse covers the last token in the cursor's source.
+    /// * `value` - The parsed value.
+    pub fn success(next: Option<Cursor<'a, TLexeme>>, value: TValue) -> Self {
         Parse::Success(SuccessfulParse {
-            end,
+            next,
             value: value.into()
         })
     }
@@ -25,9 +25,9 @@ impl<'a, TLexeme, TValue> Parse<'a, TLexeme, TValue> {
     /// Creates a failed parsing result.
     /// 
     /// # Arguments
-    /// * bad_token - A cursor pointing to the first unparseable lexeme.
-    /// * reason    - The reason why the parse couldn't succeed.
-    pub fn failure<S: Into<String>>(bad_token: Cursor<'a, TLexeme>, reason: S) -> Self {
+    /// * `bad_token` - A cursor pointing to the first unparseable lexeme, or `None` if the parse ran out of lexemes to parse (reached end-of-file).
+    /// * `reason`    - The reason why the parse couldn't succeed.
+    pub fn failure<S: Into<String>>(bad_token: Option<Cursor<'a, TLexeme>>, reason: S) -> Self {
         Parse::Failure(FailedParse {
             bad_token,
             reason: reason.into()
@@ -46,7 +46,10 @@ impl<'a, TLexeme, TValue> Parse<'a, TLexeme, TValue> {
     pub fn expect_failure<S: AsRef<str>>(self, if_not: S) -> FailedParse<'a, TLexeme> {
         match self {
             Parse::Failure(f) => f,
-            Parse::Success(s) => panic!("Expected a failed parse, but it succeeded with ending at position {}.\nMessage: {}", s.end().pos(), if_not.as_ref())
+            Parse::Success(s) => {
+                let pos = s.next().map(|s| s.pos().to_string()).unwrap_or("EOF".to_owned());
+                panic!("Expected a failed parse, but it succeeded with before at position {}.\nMessage: {}", pos, if_not.as_ref())
+            }
         }
     }
 
@@ -63,6 +66,28 @@ impl<'a, TLexeme, TValue> Parse<'a, TLexeme, TValue> {
         match self {
             Parse::Success(_) => true,
             Parse::Failure(_) => false
+        }
+    }
+
+    /// If this Parse is a Success, transforms the old value into a new value, otherwise returns the original Failure
+    /// 
+    /// # Arguments
+    /// * `mapper` - A function that transforms the old value into a new one.
+    pub fn map_value<TNewValue, F: FnOnce(TValue) -> TNewValue>(self, mapper: F) -> Parse<'a, TLexeme, TNewValue> {
+        match self {
+            Parse::Success(success) => Parse::success(success.next, mapper(success.value)),
+            Parse::Failure(failure) => Parse::Failure(failure)
+        }
+    }
+
+    /// If this Parse is a Failure, transforms the old reason into a new reason, otherwise returns the original Success
+    /// 
+    /// # Arguments
+    /// * `mapper` - A function that transforms the old reason into a new one.
+    pub fn map_reason<S: Into<String>, F: FnOnce(String) -> S>(self, mapper: F) -> Self {
+        match self {
+            Parse::Success(s) => Parse::Success(s),
+            Parse::Failure(f) => Parse::failure(f.bad_token, mapper(f.reason))
         }
     }
 
