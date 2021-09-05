@@ -49,4 +49,27 @@ mod tests {
         assert_eq!(result.next(), &None);
         assert_eq!(result.value(), &"abc");
     }
+
+    #[test]
+    pub fn points_to_right_char_after_parse() {
+        let chars: Vec<char> = "abcd".chars().collect();
+        let cursor = Cursor::new(&chars);
+
+        let parser = StringParser::new("abc");
+        let result = parser.parse(cursor).unwrap();
+
+        assert_eq!(result.next().unwrap().current(), &'d');
+        assert_eq!(result.value(), &"abc");
+    }
+
+    #[test]
+    pub fn does_not_parse_if_string_doesnt_match() {
+        let chars: Vec<char> = "xabc".chars().collect();
+        let cursor = Cursor::new(&chars);
+
+        let parser = StringParser::new("abc");
+        let result = parser.parse(cursor);
+
+        assert!(result.is_failure())
+    }
 }

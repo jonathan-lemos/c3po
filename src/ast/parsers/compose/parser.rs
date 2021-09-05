@@ -41,3 +41,50 @@ where
         &self.kind
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use super::super::super::string::stringparser::StringParser;
+
+    #[test]
+    fn composes_strings() {
+        let chars: Vec<char> = "abcdefghi".chars().collect();
+        let cursor = Cursor::new(&chars);
+
+        let sp1 = StringParser::new("abc");
+        let sp2 = StringParser::new("def");
+        let parser = ComposeParser::new(sp1, sp2);
+
+        let result = parser.parse(cursor).unwrap();
+        let (v1, v2) = result.value();
+
+        assert_eq!(v1, "abc");
+        assert_eq!(v2, "def");
+        assert_eq!(result.next().unwrap().current(), &'g');
+    }
+
+    #[test]
+    fn fails_if_first_fails() {
+        let chars: Vec<char> = "xbcdefghi".chars().collect();
+        let cursor = Cursor::new(&chars);
+
+        let sp1 = StringParser::new("abc");
+        let sp2 = StringParser::new("def");
+        let parser = ComposeParser::new(sp1, sp2);
+
+        assert!(parser.parse(cursor).is_failure())
+    }
+
+    #[test]
+    fn fails_if_second_fails() {
+        let chars: Vec<char> = "abcxefghi".chars().collect();
+        let cursor = Cursor::new(&chars);
+
+        let sp1 = StringParser::new("abc");
+        let sp2 = StringParser::new("def");
+        let parser = ComposeParser::new(sp1, sp2);
+
+        assert!(parser.parse(cursor).is_failure())
+    }
+}

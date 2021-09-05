@@ -53,10 +53,6 @@ where
     }
 }
 
-fn make_tuple<A, B>(a: A, b: B) -> (A, B) {
-    (a, b)
-}
-
 impl<TLexeme, TFirstOutput, TFirst, TSecondOutput, TSecond>
     ComposeParser<TLexeme, TFirstOutput, TFirst, TSecondOutput, TSecond, (TFirstOutput, TSecondOutput), fn(TFirstOutput, TSecondOutput) -> (TFirstOutput, TSecondOutput)>
 where
@@ -70,6 +66,6 @@ where
         first: TFirst,
         second: TSecond
     ) -> Self {
-        Self::with_combiner(first, second, make_tuple)
+        Self::with_combiner(first, second, |a, b| (a, b))
     }
 }

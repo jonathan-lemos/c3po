@@ -20,6 +20,7 @@ impl<TLexeme> PartialOrd for Cursor<'_, TLexeme> {
 mod tests {
     use super::*;
 
+    #[test]
     fn equal_cursors_are_equal() {
         let seq = vec![1, 2, 3];
 
@@ -30,6 +31,7 @@ mod tests {
         assert_eq!(ordering, Some(Ordering::Equal));
     }
 
+    #[test]
     fn further_cursor_is_greater() {
         let seq = vec![1, 2, 3];
 
@@ -43,6 +45,7 @@ mod tests {
         assert_eq!(ordering, Some(Ordering::Less));
     }
 
+    #[test]
     fn different_cursors_dont_compare() {
         let seq = vec![1, 2, 3];
         let seq2 = vec![4, 5];
