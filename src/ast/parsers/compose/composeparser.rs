@@ -1,7 +1,8 @@
 use crate::parser::parser::Parser;
 use std::marker::PhantomData;
 
-/// Composes two parsers, running the first parser and then the second parser, returning both results.
+/// Composes two parsers, matching the first parser and then the second parser, returning both results.
+#[derive(Debug)]
 pub struct ComposeParser<TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner>
 where
     TFirstOutput: Send + Sync,
@@ -30,7 +31,13 @@ where
     TFinalOutput: Send + Sync,
     FCombiner: (Fn(TFirstOutput, TSecondOutput) -> TFinalOutput) + Clone + Send + Sync
 {
-    pub fn with_combiner(
+    /// Creates a new ComposeParser that combines the two results with a function.
+    /// 
+    /// # Arguments
+    /// * `first`    - The first parser to run.
+    /// * `second`   - The parser to run after `first`.
+    /// * `combiner` - A function that combines the results of the two parsers.
+    pub fn using_combiner(
         first: TFirst,
         second: TSecond,
         combiner: FCombiner,
@@ -57,10 +64,15 @@ where
     TSecondOutput: Send + Sync,
     TSecond: Parser<TSecondOutput>,
 {
+    /// Creates a new ComposeParser that combines the two results into a tuple.
+    /// 
+    /// # Arguments
+    /// * `first`    - The first parser to run.
+    /// * `second`   - The parser to run after `first`.
     pub fn new(
         first: TFirst,
         second: TSecond
     ) -> Self {
-        Self::with_combiner(first, second, |a, b| (a, b))
+        Self::using_combiner(first, second, |a, b| (a, b))
     }
 }

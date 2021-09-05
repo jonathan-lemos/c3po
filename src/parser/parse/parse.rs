@@ -34,6 +34,19 @@ impl<'a, TValue> Parse<'a, TValue> {
         })
     }
 
+    /// If successful, return a new Parse as a function of the old Parse, otherwise return the existing failure.
+    /// 
+    /// For Haskell folk, this binds on the success case.
+    /// 
+    /// # Arguments
+    /// * `if_successful` - If the Parse is successful, run this function.
+    pub fn and_then<F: FnOnce(SuccessfulParse<'a, TValue>) -> Parse<'a, TValue>>(self, if_successful: F) -> Self {
+        match self {
+            Parse::Success(success) => if_successful(success),
+            Parse::Failure(failure) => Parse::Failure(failure)
+        }
+    }
+
     /// Unwraps a SuccessfulParse if the parse succeeded. Panics with the given message if it failed.
     pub fn expect<S: AsRef<str>>(self, if_not: S) -> SuccessfulParse<'a, TValue> {
         match self {
@@ -88,6 +101,19 @@ impl<'a, TValue> Parse<'a, TValue> {
         match self {
             Parse::Success(s) => Parse::Success(s),
             Parse::Failure(f) => Parse::failure(f.bad_token, mapper(f.reason))
+        }
+    }
+
+    /// If unsuccessful, return a new Parse as a function of the old Parse, otherwise return the existing success.
+    /// 
+    /// For Haskell folk, this binds on the failure case.
+    /// 
+    /// # Arguments
+    /// * `if_failure` - If the Parse is unsuccessful, run this function.
+    pub fn or_else<F: FnOnce(FailedParse<'a>) -> Parse<'a, TValue>>(self, if_failure: F) -> Self {
+        match self {
+            Parse::Success(s) => Parse::Success(s),
+            Parse::Failure(f) => if_failure(f)
         }
     }
 
