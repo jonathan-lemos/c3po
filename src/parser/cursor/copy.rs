@@ -1,9 +1,9 @@
 use super::cursor::Cursor;
 
-impl<'a, TLexeme> Clone for Cursor<'a, TLexeme> {
+impl<'a> Clone for Cursor<'a> {
     fn clone(&self) -> Self {
        *self 
     }
 }
 
-impl<'a, TLexeme> Copy for Cursor<'a, TLexeme> {}
+impl<'a> Copy for Cursor<'a> {}

@@ -4,18 +4,18 @@ use super::successfulparse::SuccessfulParse;
 
 /// Represents the result of a parsing operation.
 #[derive(Debug, Clone)]
-pub enum Parse<'a, TLexeme, TValue> {
-    Success(SuccessfulParse<'a, TLexeme, TValue>),
-    Failure(FailedParse<'a, TLexeme>)
+pub enum Parse<'a, TValue> {
+    Success(SuccessfulParse<'a, TValue>),
+    Failure(FailedParse<'a>)
 }
 
-impl<'a, TLexeme, TValue> Parse<'a, TLexeme, TValue> {
+impl<'a, TValue> Parse<'a, TValue> {
     /// Creates a successful parsing result.
     /// 
     /// # Arguments
     /// * `next`  - A cursor pointing to the next lexeme after the parsed section. `None` if this parse covers the last token in the cursor's source.
     /// * `value` - The parsed value.
-    pub fn success(next: Option<Cursor<'a, TLexeme>>, value: TValue) -> Self {
+    pub fn success(next: Option<Cursor<'a>>, value: TValue) -> Self {
         Parse::Success(SuccessfulParse {
             next,
             value: value.into()
@@ -27,7 +27,7 @@ impl<'a, TLexeme, TValue> Parse<'a, TLexeme, TValue> {
     /// # Arguments
     /// * `bad_token` - A cursor pointing to the first unparseable lexeme, or `None` if the parse ran out of lexemes to parse (reached end-of-file).
     /// * `reason`    - The reason why the parse couldn't succeed.
-    pub fn failure<S: Into<String>>(bad_token: Option<Cursor<'a, TLexeme>>, reason: S) -> Self {
+    pub fn failure<S: Into<String>>(bad_token: Option<Cursor<'a>>, reason: S) -> Self {
         Parse::Failure(FailedParse {
             bad_token,
             reason: reason.into()
@@ -35,7 +35,7 @@ impl<'a, TLexeme, TValue> Parse<'a, TLexeme, TValue> {
     }
 
     /// Unwraps a SuccessfulParse if the parse succeeded. Panics with the given message if it failed.
-    pub fn expect<S: AsRef<str>>(self, if_not: S) -> SuccessfulParse<'a, TLexeme, TValue> {
+    pub fn expect<S: AsRef<str>>(self, if_not: S) -> SuccessfulParse<'a, TValue> {
         match self {
             Parse::Success(s) => s,
             Parse::Failure(f) => panic!("Expected a successful parse, but it failed due to {}.\nMessage: {}", f.reason(), if_not.as_ref())
@@ -43,7 +43,7 @@ impl<'a, TLexeme, TValue> Parse<'a, TLexeme, TValue> {
     }
 
     /// Unwraps a FailedParse if the parse failed. Panics with the given message if it succeeded.
-    pub fn expect_failure<S: AsRef<str>>(self, if_not: S) -> FailedParse<'a, TLexeme> {
+    pub fn expect_failure<S: AsRef<str>>(self, if_not: S) -> FailedParse<'a> {
         match self {
             Parse::Failure(f) => f,
             Parse::Success(s) => {
@@ -73,7 +73,7 @@ impl<'a, TLexeme, TValue> Parse<'a, TLexeme, TValue> {
     /// 
     /// # Arguments
     /// * `mapper` - A function that transforms the old value into a new one.
-    pub fn map_value<TNewValue, F: FnOnce(TValue) -> TNewValue>(self, mapper: F) -> Parse<'a, TLexeme, TNewValue> {
+    pub fn map_value<TNewValue, F: FnOnce(TValue) -> TNewValue>(self, mapper: F) -> Parse<'a, TNewValue> {
         match self {
             Parse::Success(success) => Parse::success(success.next, mapper(success.value)),
             Parse::Failure(failure) => Parse::Failure(failure)
@@ -92,12 +92,12 @@ impl<'a, TLexeme, TValue> Parse<'a, TLexeme, TValue> {
     }
 
     /// Unwraps a SuccessfulParse if the parse succeeded. Panics if it failed.
-    pub fn unwrap(self) -> SuccessfulParse<'a, TLexeme, TValue> {
+    pub fn unwrap(self) -> SuccessfulParse<'a, TValue> {
         self.expect("unwrap() called on a failed parse.")
     }
 
     /// Unwraps a FailedParse if the parse failed. Panics if it succeeded.
-    pub fn unwrap_failure(self) -> FailedParse<'a, TLexeme> {
+    pub fn unwrap_failure(self) -> FailedParse<'a> {
         self.expect_failure("unwrap_err() called on a successful parse.S")
     }
 }

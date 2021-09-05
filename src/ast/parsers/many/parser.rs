@@ -3,13 +3,12 @@ use crate::parser::parse::parse::Parse;
 use crate::parser::parser::Parser;
 use crate::parser::cursor::cursor::Cursor;
 
-impl<TLexeme, TOutput, TParser> Parser<TLexeme, Vec<TOutput>> for ManyParser<TLexeme, TOutput, TParser>
+impl<TOutput, TParser> Parser<Vec<TOutput>> for ManyParser<TOutput, TParser>
 where
-    TLexeme: Send + Sync,
     TOutput: Send + Sync,
-    TParser: Parser<TLexeme, TOutput>
+    TParser: Parser<TOutput>
  {
-    fn parse<'a>(&self, mut cursor: Option<Cursor<'a, TLexeme>>) -> Parse<'a, TLexeme, Vec<TOutput>> {
+    fn parse<'a>(&self, mut cursor: Option<Cursor<'a>>) -> Parse<'a, Vec<TOutput>> {
         let mut results = Vec::new();
 
         while let Some(c) = cursor {
@@ -37,8 +36,7 @@ mod tests {
 
     #[test]
     fn parses_many_abc() {
-        let chars: Vec<char> = "abcabcabcxabc".chars().collect();
-        let cursor = Cursor::new(&chars);
+        let cursor = Cursor::new("abcabcabcxabc");
 
         let sp = StringParser::new("abc");
         let parser = ManyParser::new(sp);
@@ -52,8 +50,7 @@ mod tests {
 
     #[test]
     fn parses_no_abc() {
-        let chars: Vec<char> = "xabcabcabcxabc".chars().collect();
-        let cursor = Cursor::new(&chars);
+        let cursor = Cursor::new("xabcabcabcxabc");
 
         let sp = StringParser::new("abc");
         let parser = ManyParser::new(sp);

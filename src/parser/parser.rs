@@ -1,7 +1,7 @@
 use super::cursor::cursor::Cursor;
 use super::parse::parse::Parse;
 
-pub trait Parser<TLexeme, TOutput>: Clone + Send + Sync {
-    fn parse<'a>(&self, cursor: Option<Cursor<'a, TLexeme>>) -> Parse<'a, TLexeme, TOutput>;
+pub trait Parser<TOutput>: Clone + Send + Sync {
+    fn parse<'a>(&self, cursor: Option<Cursor<'a>>) -> Parse<'a, TOutput>;
     fn kind(&self) -> &str;
 }

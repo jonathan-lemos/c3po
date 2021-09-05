@@ -1,9 +1,21 @@
 use super::cursor::Cursor;
 use crate::immut_iter::immut_iterable::ImmutableIterable;
 
-impl<TLexeme> ImmutableIterable for Cursor<'_, TLexeme> {
+impl ImmutableIterable for Cursor<'_> {
     fn next_immut(&self) -> Option<Self> {
-        self + 1
+        let length_bytes = self.current().len_utf8();
+
+        let ret = Cursor {
+            sequence: self.sequence,
+            pos_bytes: self.pos_bytes + length_bytes,
+            pos_chars: self.pos_chars + 1
+        };
+
+        if ret.pos_bytes >= ret.sequence.len() {
+            None
+        } else {
+            Some(ret)
+        }
     }
 }
 
@@ -13,11 +25,10 @@ mod tests {
 
     #[test]
     fn cursor_iterates_chars() {
-        let seq = vec![1, 2, 3];
-        let c = Cursor::new(&seq).unwrap();
+        let c = Cursor::new("abc").unwrap();
 
-        let actual: Vec<i32> = c.iter_immut().map(|x| *x.current()).collect();
+        let actual: String = c.iter_immut().map(|x| x.current()).collect();
 
-        assert_eq!(seq, actual);
+        assert_eq!("abc", &actual);
     }
 }

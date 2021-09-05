@@ -2,13 +2,12 @@ use crate::parser::parser::Parser;
 use std::marker::PhantomData;
 
 /// Composes two parsers, running the first parser and then the second parser, returning both results.
-pub struct ComposeParser<TLexeme, TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner>
+pub struct ComposeParser<TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner>
 where
-    TLexeme: Send + Sync,
     TFirstOutput: Send + Sync,
-    TFirst: Parser<TLexeme, TFirstOutput>,
+    TFirst: Parser<TFirstOutput>,
     TSecondOutput: Send + Sync,
-    TSecond: Parser<TLexeme, TSecondOutput>,
+    TSecond: Parser<TSecondOutput>,
     TFinalOutput: Send + Sync,
     FCombiner: (Fn(TFirstOutput, TSecondOutput) -> TFinalOutput) + Send + Sync + Clone
 {
@@ -16,20 +15,18 @@ where
     pub(super) second: TSecond,
     pub(super) combiner: FCombiner,
     pub(super) kind: String,
-    pub(super) _lexeme_marker: PhantomData<TLexeme>,
     pub(super) _first_output_marker: PhantomData<TFirstOutput>,
     pub(super) _second_output_marker: PhantomData<TSecondOutput>,
     pub(super) _final_output_marker: PhantomData<TFinalOutput>,
 }
 
-impl<TLexeme, TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner>
-    ComposeParser<TLexeme, TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner>
+impl<TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner>
+    ComposeParser<TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner>
 where
-    TLexeme: Send + Sync,
     TFirstOutput: Send + Sync,
-    TFirst: Parser<TLexeme, TFirstOutput>,
+    TFirst: Parser<TFirstOutput>,
     TSecondOutput: Send + Sync,
-    TSecond: Parser<TLexeme, TSecondOutput>,
+    TSecond: Parser<TSecondOutput>,
     TFinalOutput: Send + Sync,
     FCombiner: (Fn(TFirstOutput, TSecondOutput) -> TFinalOutput) + Clone + Send + Sync
 {
@@ -45,7 +42,6 @@ where
             second,
             combiner,
             kind,
-            _lexeme_marker: PhantomData,
             _first_output_marker: PhantomData,
             _second_output_marker: PhantomData,
             _final_output_marker: PhantomData
@@ -53,14 +49,13 @@ where
     }
 }
 
-impl<TLexeme, TFirstOutput, TFirst, TSecondOutput, TSecond>
-    ComposeParser<TLexeme, TFirstOutput, TFirst, TSecondOutput, TSecond, (TFirstOutput, TSecondOutput), fn(TFirstOutput, TSecondOutput) -> (TFirstOutput, TSecondOutput)>
+impl<TFirstOutput, TFirst, TSecondOutput, TSecond>
+    ComposeParser<TFirstOutput, TFirst, TSecondOutput, TSecond, (TFirstOutput, TSecondOutput), fn(TFirstOutput, TSecondOutput) -> (TFirstOutput, TSecondOutput)>
 where
-    TLexeme: Send + Sync,
     TFirstOutput: Send + Sync,
-    TFirst: Parser<TLexeme, TFirstOutput>,
+    TFirst: Parser<TFirstOutput>,
     TSecondOutput: Send + Sync,
-    TSecond: Parser<TLexeme, TSecondOutput>,
+    TSecond: Parser<TSecondOutput>,
 {
     pub fn new(
         first: TFirst,
