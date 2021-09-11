@@ -19,14 +19,12 @@ where
     }
 }
 
-impl<TOutput> EmptyParser<TOutput, fn() -> TOutput>
-where
-    TOutput: Default + Send + Sync,
+impl EmptyParser<(), fn() -> ()>
 {
-    /// Creates an EmptyParser that returns the `Default` value for a type.
+    /// Creates an EmptyParser that returns the unit value (`()`).
     pub fn new() -> Self {
         EmptyParser {
-            factory: || TOutput::default(),
+            factory: || (),
         }
     }
 }

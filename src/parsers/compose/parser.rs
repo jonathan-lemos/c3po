@@ -32,7 +32,7 @@ where
 
         self.second
             .parse(*first_parse.next())
-            .map_value(|v| (self.combiner)(first_parse.into_value(), v))
+            .map(|v| (self.combiner)(first_parse.into_value(), v))
             .map_reason(|r| format!("Failed to parse {}: {}", self.second.kind(), r))
     }
 

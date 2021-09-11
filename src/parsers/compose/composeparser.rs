@@ -67,8 +67,8 @@ where
     /// Creates a new ComposeParser that combines the two results into a tuple.
     /// 
     /// # Arguments
-    /// * `first`    - The first parser to run.
-    /// * `second`   - The parser to run after `first`.
+    /// * `first`  - The first parser to run.
+    /// * `second` - The parser to run after `first`.
     pub fn new(
         first: TFirst,
         second: TSecond

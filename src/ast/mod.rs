@@ -1,2 +1,3 @@
 pub mod node;
-pub mod parsers;
+pub mod regex;
+pub mod string;

@@ -1,5 +1,6 @@
 pub mod ast;
 pub mod parser;
+pub mod parsers;
 pub mod immut_iter;
 
 #[cfg(test)]

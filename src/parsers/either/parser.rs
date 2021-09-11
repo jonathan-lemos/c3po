@@ -26,11 +26,11 @@ where
     fn parse<'a>(&self, cursor: Option<Cursor<'a>>) -> Parse<'a, TFinalOutput> {
         self.left
             .parse(cursor)
-            .map_value(self.if_left.clone())
+            .map(self.if_left.clone())
             .or_else(|e| {
                 self.right
                     .parse(cursor)
-                    .map_value(self.if_right.clone())
+                    .map(self.if_right.clone())
                     .map_reason(|r| {
                         format!(
                             "Couldn't parse {} because {}. Couldn't parse {} because {}",

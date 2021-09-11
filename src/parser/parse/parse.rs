@@ -86,7 +86,7 @@ impl<'a, TValue> Parse<'a, TValue> {
     /// 
     /// # Arguments
     /// * `mapper` - A function that transforms the old value into a new one.
-    pub fn map_value<TNewValue, F: FnOnce(TValue) -> TNewValue>(self, mapper: F) -> Parse<'a, TNewValue> {
+    pub fn map<TNewValue, F: FnOnce(TValue) -> TNewValue>(self, mapper: F) -> Parse<'a, TNewValue> {
         match self {
             Parse::Success(success) => Parse::success(success.next, mapper(success.value)),
             Parse::Failure(failure) => Parse::Failure(failure)
