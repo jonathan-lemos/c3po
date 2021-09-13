@@ -5,7 +5,7 @@ use crate::parser::parser::Parser;
 impl<TInput, TInputParser, TOutput, FMapper> Clone for MapParser<TInput, TInputParser, TOutput, FMapper>
 where
     TInput: Send + Sync,
-    TInputParser: Parser<TInput>,
+    TInputParser: Parser<Output = TInput>,
     TOutput: Send + Sync,
     FMapper: (Fn(TInput) -> TOutput) + Clone + Send + Sync,
 {

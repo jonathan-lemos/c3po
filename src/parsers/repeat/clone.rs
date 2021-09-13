@@ -5,7 +5,7 @@ use std::marker::PhantomData;
 impl<TOutput, TParser> Clone for RepeatParser<TOutput, TParser>
 where
     TOutput: Send + Sync,
-    TParser: Parser<TOutput>,
+    TParser: Parser<Output = TOutput>,
 {
     fn clone(&self) -> Self {
         Self {

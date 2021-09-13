@@ -4,16 +4,18 @@ use crate::parser::parse::parse::Parse;
 use crate::parser::parser::Parser;
 
 impl<TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner>
-    Parser<TFinalOutput>
+    Parser
     for ComposeParser<TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner>
 where
     TFirstOutput: Send + Sync,
-    TFirst: Parser<TFirstOutput>,
+    TFirst: Parser<Output = TFirstOutput>,
     TSecondOutput: Send + Sync,
-    TSecond: Parser<TSecondOutput>,
+    TSecond: Parser<Output = TSecondOutput>,
     TFinalOutput: Send + Sync,
     FCombiner: (Fn(TFirstOutput, TSecondOutput) -> TFinalOutput) + Send + Sync + Clone
 {
+    type Output = TFinalOutput;
+    
     fn parse<'a>(
         &self,
         cursor: Option<Cursor<'a>>,

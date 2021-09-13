@@ -4,7 +4,9 @@ use crate::parser::cursor::cursor::Cursor;
 use crate::parser::parse::parse::Parse;
 use crate::parser::parser::Parser;
 
-impl Parser<String> for StringParser {
+impl Parser for StringParser {
+    type Output = String;
+
     fn parse<'a>(&self, mut cursor: Option<Cursor<'a>>) -> Parse<'a, String> {
         let mut char_iter = self.string().chars().peekable();
 

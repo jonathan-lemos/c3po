@@ -6,9 +6,9 @@ use std::marker::PhantomData;
 pub struct ComposeParser<TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner>
 where
     TFirstOutput: Send + Sync,
-    TFirst: Parser<TFirstOutput>,
+    TFirst: Parser<Output = TFirstOutput>,
     TSecondOutput: Send + Sync,
-    TSecond: Parser<TSecondOutput>,
+    TSecond: Parser<Output = TSecondOutput>,
     TFinalOutput: Send + Sync,
     FCombiner: (Fn(TFirstOutput, TSecondOutput) -> TFinalOutput) + Send + Sync + Clone
 {
@@ -25,9 +25,9 @@ impl<TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner>
     ComposeParser<TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner>
 where
     TFirstOutput: Send + Sync,
-    TFirst: Parser<TFirstOutput>,
+    TFirst: Parser<Output = TFirstOutput>,
     TSecondOutput: Send + Sync,
-    TSecond: Parser<TSecondOutput>,
+    TSecond: Parser<Output = TSecondOutput>,
     TFinalOutput: Send + Sync,
     FCombiner: (Fn(TFirstOutput, TSecondOutput) -> TFinalOutput) + Clone + Send + Sync
 {
@@ -60,9 +60,9 @@ impl<TFirstOutput, TFirst, TSecondOutput, TSecond>
     ComposeParser<TFirstOutput, TFirst, TSecondOutput, TSecond, (TFirstOutput, TSecondOutput), fn(TFirstOutput, TSecondOutput) -> (TFirstOutput, TSecondOutput)>
 where
     TFirstOutput: Send + Sync,
-    TFirst: Parser<TFirstOutput>,
+    TFirst: Parser<Output = TFirstOutput>,
     TSecondOutput: Send + Sync,
-    TSecond: Parser<TSecondOutput>,
+    TSecond: Parser<Output = TSecondOutput>,
 {
     /// Creates a new ComposeParser that combines the two results into a tuple.
     /// 

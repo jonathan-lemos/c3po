@@ -15,9 +15,9 @@ pub struct EitherParser<
     FRightMapper,
 > where
     TLeftOutput: Send + Sync,
-    TLeft: Parser<TLeftOutput>,
+    TLeft: Parser<Output = TLeftOutput>,
     TRightOutput: Send + Sync,
-    TRight: Parser<TRightOutput>,
+    TRight: Parser<Output = TRightOutput>,
     TFinalOutput: Send + Sync,
     FLeftMapper: (Fn(TLeftOutput) -> TFinalOutput) + Send + Sync + Clone,
     FRightMapper: (Fn(TRightOutput) -> TFinalOutput) + Send + Sync + Clone,
@@ -36,9 +36,9 @@ impl<TLeftOutput, TLeft, TRightOutput, TRight, TFinalOutput, FLeftMapper, FRight
     EitherParser<TLeftOutput, TLeft, TRightOutput, TRight, TFinalOutput, FLeftMapper, FRightMapper>
 where
     TLeftOutput: Send + Sync,
-    TLeft: Parser<TLeftOutput>,
+    TLeft: Parser<Output = TLeftOutput>,
     TRightOutput: Send + Sync,
-    TRight: Parser<TRightOutput>,
+    TRight: Parser<Output = TRightOutput>,
     TFinalOutput: Send + Sync,
     FLeftMapper: (Fn(TLeftOutput) -> TFinalOutput) + Send + Sync + Clone,
     FRightMapper: (Fn(TRightOutput) -> TFinalOutput) + Send + Sync + Clone,
@@ -83,9 +83,9 @@ impl<TLeftOutput, TLeft, TRightOutput, TRight>
     >
 where
     TLeftOutput: Send + Sync,
-    TLeft: Parser<TLeftOutput>,
+    TLeft: Parser<Output = TLeftOutput>,
     TRightOutput: Send + Sync,
-    TRight: Parser<TRightOutput>,
+    TRight: Parser<Output = TRightOutput>,
 {
     /// Creates a new EitherParser which returns a `Result<TLeftOutput, TRightOutput>`.
     /// 

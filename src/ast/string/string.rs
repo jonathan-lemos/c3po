@@ -1,8 +1,10 @@
+use crate::parser::parser::Parser;
 use super::super::node::node::Node;
 use crate::parsers::map::map::Map;
-use crate::parsers::map::mapparser::MapParser;
 use crate::parsers::string::stringparser::StringParser;
 
-pub fn string<S: Into<String>>(string: S) -> MapParser<String, StringParser, Node, fn(String) -> Node> {
-    StringParser::new(string).map(|s| Node::leaf("string", s))
+pub fn string<TValue: Into<String>, TKind: Into<String>>(string: TValue, kind: TKind) -> impl Parser<Output = Node> {
+    let kind = kind.into();
+    let kc = kind.clone();
+    StringParser::new(string).map(|_| kc, move |s| Node::leaf(kind.clone(), s))
 }

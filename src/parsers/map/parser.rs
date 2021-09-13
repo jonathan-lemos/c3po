@@ -3,13 +3,15 @@ use crate::parser::cursor::cursor::Cursor;
 use crate::parser::parse::parse::Parse;
 use crate::parser::parser::Parser;
 
-impl<TInput, TInputParser, TOutput, FMapper> Parser<TOutput> for MapParser<TInput, TInputParser, TOutput, FMapper>
+impl<TInput, TInputParser, TOutput, FMapper> Parser for MapParser<TInput, TInputParser, TOutput, FMapper>
 where
     TInput: Send + Sync,
-    TInputParser: Parser<TInput>,
+    TInputParser: Parser<Output = TInput>,
     TOutput: Send + Sync,
     FMapper: (Fn(TInput) -> TOutput) + Clone + Send + Sync,
 {
+    type Output = TOutput;
+
     fn parse<'a>(&self, cursor: Option<Cursor<'a>>) -> Parse<'a, TOutput> {
         self.parser.parse(cursor).map(self.mapper.clone())
     }
@@ -25,11 +27,21 @@ mod tests {
     use super::*;
 
     #[test]
+    fn maps_kind() {
+        let cursor = Cursor::new("abcabcabcxabc");
+
+        let sp = StringParser::new("abc");
+        let parser = MapParser::new_kind(sp, |_| "abcdef");
+
+        assert_eq!(parser.kind(), "abcdef");
+    }
+
+    #[test]
     fn maps_successful_parse() {
         let cursor = Cursor::new("abcabcabcxabc");
 
         let sp = StringParser::new("abc");
-        let parser = MapParser::new(sp, |s| s.len());
+        let parser = MapParser::new_value(sp, |s| s.len());
 
         let result = parser.parse(cursor).unwrap();
         let value = result.value();
@@ -40,7 +52,7 @@ mod tests {
     #[test]
     fn keeps_unsuccessful_parse() {
         let sp = StringParser::new("abc");
-        let parser = MapParser::new(sp, |s| s.len());
+        let parser = MapParser::new_value(sp, |s| s.len());
 
         let result = parser.parse(None);
 

@@ -8,7 +8,7 @@ use std::ops::RangeBounds;
 pub struct RepeatParser<TOutput, TParser>
 where
     TOutput: Send + Sync,
-    TParser: Parser<TOutput>,
+    TParser: Parser<Output = TOutput>,
 {
     // bounds are inclusive
     pub(super) bounds: Option<(usize, Option<usize>)>,
@@ -70,7 +70,7 @@ fn format_range<TRange: RangeBounds<usize>>(range: &TRange) -> String {
 impl<TOutput, TParser> RepeatParser<TOutput, TParser>
 where
     TOutput: Send + Sync,
-    TParser: Parser<TOutput>,
+    TParser: Parser<Output = TOutput>,
 {
     /// Creates a new RepeatParser that matches a `parser` `range` times.
     ///

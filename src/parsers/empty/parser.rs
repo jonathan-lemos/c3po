@@ -3,11 +3,13 @@ use super::emptyparser::EmptyParser;
 use crate::parser::parser::Parser;
 use crate::parser::cursor::cursor::Cursor;
 
-impl<TOutput, FOutputFactory> Parser<TOutput> for EmptyParser<TOutput, FOutputFactory>
+impl<TOutput, FOutputFactory> Parser for EmptyParser<TOutput, FOutputFactory>
 where
     TOutput: Send + Sync,
     FOutputFactory: (Fn() -> TOutput) + Clone + Send + Sync,
 {
+    type Output = TOutput;
+
     fn parse<'a>(&self, cursor: Option<Cursor<'a>>) -> Parse<'a, TOutput> {
         Parse::success(cursor, (self.factory)())
     }

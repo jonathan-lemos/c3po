@@ -3,11 +3,13 @@ use crate::parser::parse::parse::Parse;
 use crate::parser::parser::Parser;
 use crate::parser::cursor::cursor::Cursor;
 
-impl<TOutput, TParser> Parser<Vec<TOutput>> for ManyParser<TOutput, TParser>
+impl<TOutput, TParser> Parser for ManyParser<TOutput, TParser>
 where
     TOutput: Send + Sync,
-    TParser: Parser<TOutput>
+    TParser: Parser<Output = TOutput>
  {
+    type Output = Vec<TOutput>;
+
     fn parse<'a>(&self, mut cursor: Option<Cursor<'a>>) -> Parse<'a, Vec<TOutput>> {
         let mut results = Vec::new();
 

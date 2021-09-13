@@ -5,7 +5,7 @@ use crate::parser::parser::Parser;
 impl<TOutput, TParser> Clone for ManyParser<TOutput, TParser>
 where
     TOutput: Send + Sync,
-    TParser: Parser<TOutput>,
+    TParser: Parser<Output = TOutput>,
 {
     fn clone(&self) -> Self {
         ManyParser {

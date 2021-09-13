@@ -4,7 +4,7 @@ use crate::parser::parse::parse::Parse;
 use crate::parser::parser::Parser;
 
 impl<TLeftOutput, TLeft, TRightOutput, TRight, TFinalOutput, FLeftMapper, FRightMapper>
-    Parser<TFinalOutput>
+    Parser
     for EitherParser<
         TLeftOutput,
         TLeft,
@@ -16,13 +16,15 @@ impl<TLeftOutput, TLeft, TRightOutput, TRight, TFinalOutput, FLeftMapper, FRight
     >
 where
     TLeftOutput: Send + Sync,
-    TLeft: Parser<TLeftOutput>,
+    TLeft: Parser<Output = TLeftOutput>,
     TRightOutput: Send + Sync,
-    TRight: Parser<TRightOutput>,
+    TRight: Parser<Output = TRightOutput>,
     TFinalOutput: Send + Sync,
     FLeftMapper: (Fn(TLeftOutput) -> TFinalOutput) + Send + Sync + Clone,
     FRightMapper: (Fn(TRightOutput) -> TFinalOutput) + Send + Sync + Clone,
 {
+    type Output = TFinalOutput;
+
     fn parse<'a>(&self, cursor: Option<Cursor<'a>>) -> Parse<'a, TFinalOutput> {
         self.left
             .parse(cursor)

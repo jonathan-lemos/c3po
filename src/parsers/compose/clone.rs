@@ -6,9 +6,9 @@ impl<TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner> Clon
     for ComposeParser<TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner>
 where
     TFirstOutput: Send + Sync,
-    TFirst: Parser<TFirstOutput>,
+    TFirst: Parser<Output = TFirstOutput>,
     TSecondOutput: Send + Sync,
-    TSecond: Parser<TSecondOutput>,
+    TSecond: Parser<Output = TSecondOutput>,
     TFinalOutput: Send + Sync,
     FCombiner: (Fn(TFirstOutput, TSecondOutput) -> TFinalOutput) + Send + Sync + Clone
 {

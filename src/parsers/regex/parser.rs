@@ -3,7 +3,9 @@ use crate::parser::cursor::cursor::Cursor;
 use crate::parser::parse::parse::Parse;
 use crate::parser::parser::Parser;
 
-impl Parser<String> for RegexParser {
+impl Parser for RegexParser {
+    type Output = String;
+
     fn parse<'a>(&self, cursor: Option<Cursor<'a>>) -> Parse<'a, String> {
         let slice = match cursor {
             Some(s) => s.current_str(),
