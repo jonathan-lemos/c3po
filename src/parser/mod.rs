@@ -1,3 +1,4 @@
+pub mod bitor;
 pub mod cursor;
 pub mod output;
 pub mod parse;

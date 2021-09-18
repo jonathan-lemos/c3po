@@ -15,10 +15,10 @@ impl<'a, TValue> Parse<'a, TValue> {
     /// # Arguments
     /// * `next`  - A cursor pointing to the next lexeme after the parsed section. `None` if this parse covers the last token in the cursor's source.
     /// * `value` - The parsed value.
-    pub fn success(next: Option<Cursor<'a>>, value: TValue) -> Self {
+    pub fn success<V: Into<TValue>>(next: Option<Cursor<'a>>, value: V) -> Self {
         Parse::Success(SuccessfulParse {
             next,
-            value: value.into()
+            value: value.into(),
         })
     }
 
@@ -51,7 +51,7 @@ impl<'a, TValue> Parse<'a, TValue> {
     pub fn expect<S: AsRef<str>>(self, if_not: S) -> SuccessfulParse<'a, TValue> {
         match self {
             Parse::Success(s) => s,
-            Parse::Failure(f) => panic!("Expected a successful parse, but it failed due to {}.\nMessage: {}", f.reason(), if_not.as_ref())
+            Parse::Failure(f) => panic!("Expected a successful parse, but it failed due to {}.\nMessage: {}", f.reason, if_not.as_ref())
         }
     }
 
@@ -60,7 +60,7 @@ impl<'a, TValue> Parse<'a, TValue> {
         match self {
             Parse::Failure(f) => f,
             Parse::Success(s) => {
-                let pos = s.next().map(|s| s.pos().to_string()).unwrap_or("EOF".to_owned());
+                let pos = s.next.map(|s| s.pos().to_string()).unwrap_or("EOF".to_owned());
                 panic!("Expected a failed parse, but it succeeded with before at position {}.\nMessage: {}", pos, if_not.as_ref())
             }
         }
