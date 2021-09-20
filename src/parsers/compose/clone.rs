@@ -10,7 +10,7 @@ where
     TSecondOutput: Send + Sync,
     TSecond: Parser<Output = TSecondOutput>,
     TFinalOutput: Send + Sync,
-    FCombiner: (Fn(TFirstOutput, TSecondOutput) -> TFinalOutput) + Send + Sync + Clone
+    FCombiner: (Fn(TFirstOutput, TSecondOutput) -> TFinalOutput) + Send + Sync + Clone,
 {
     fn clone(&self) -> Self {
         ComposeParser {
@@ -20,7 +20,7 @@ where
             kind: self.kind.clone(),
             _first_output_marker: PhantomData,
             _second_output_marker: PhantomData,
-            _final_output_marker: PhantomData
+            _final_output_marker: PhantomData,
         }
     }
 }

@@ -3,7 +3,8 @@ use crate::parser::cursor::cursor::Cursor;
 use crate::parser::parse::parse::Parse;
 use crate::parser::parser::Parser;
 
-impl<TInput, TInputParser, TOutput, FMapper> Parser for MapParser<TInput, TInputParser, TOutput, FMapper>
+impl<TInput, TInputParser, TOutput, FMapper> Parser
+    for MapParser<TInput, TInputParser, TOutput, FMapper>
 where
     TInput: Send + Sync,
     TInputParser: Parser<Output = TInput>,

@@ -9,14 +9,14 @@ pub struct FailedParse<'a> {
 
 impl<'a> FailedParse<'a> {
     /// Creates a FailedParse
-    /// 
+    ///
     /// # Arguments
     /// * `bad_token` - A cursor pointing to the first unparseable lexeme, or `None` if the parse ran out of lexemes to parse (reached end-of-file).
     /// * `reason`    - A reason why the lexemes couldn't be parsed.
     pub fn new<S: Into<String>>(bad_token: Option<Cursor<'a>>, reason: S) -> Self {
         FailedParse {
             bad_token,
-            reason: reason.into()
+            reason: reason.into(),
         }
     }
 

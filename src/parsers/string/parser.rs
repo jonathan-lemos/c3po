@@ -14,7 +14,10 @@ impl Parser for StringParser {
             match char_iter.peek() {
                 Some(char) => {
                     if char != &c.current() {
-                        return Parse::failure(Some(c), format!("Expected '{}', got '{}'", c.current(), char));
+                        return Parse::failure(
+                            Some(c),
+                            format!("Expected '{}', got '{}'", c.current(), char),
+                        );
                     }
                 }
                 None => break,
@@ -25,7 +28,13 @@ impl Parser for StringParser {
         }
 
         if let Some(char) = char_iter.peek() {
-            Parse::failure(None, format!("Expected '{}', but reached EOF before it could be read.", char))
+            Parse::failure(
+                None,
+                format!(
+                    "Expected '{}', but reached EOF before it could be read.",
+                    char
+                ),
+            )
         } else {
             Parse::success(cursor, self.string.clone())
         }

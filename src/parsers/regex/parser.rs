@@ -9,21 +9,23 @@ impl Parser for RegexParser {
     fn parse<'a>(&self, cursor: Option<Cursor<'a>>) -> Parse<'a, String> {
         let slice = match cursor {
             Some(s) => s.current_str(),
-            None => ""
+            None => "",
         };
 
         let mat = match self.regex.find(slice) {
             Ok(Some(s)) => s,
-            _ => return Parse::failure(cursor, "The regex didn't match.")
+            _ => return Parse::failure(cursor, "The regex didn't match."),
         };
 
         if mat.start() != 0 {
-            Parse::failure(cursor, "The regex did not match the beginning of the string.")
+            Parse::failure(
+                cursor,
+                "The regex did not match the beginning of the string.",
+            )
         } else {
             let ret = mat.as_str().to_string();
             Parse::success(cursor.and_then(|c| c + ret.chars().count()), ret)
         }
-
     }
 
     fn kind(&self) -> &str {

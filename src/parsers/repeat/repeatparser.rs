@@ -18,9 +18,7 @@ where
 }
 
 // the usizes are inclusive
-fn range_to_values<TRange: RangeBounds<usize>>(
-    range: &TRange,
-) -> Option<(usize, Option<usize>)> {
+fn range_to_values<TRange: RangeBounds<usize>>(range: &TRange) -> Option<(usize, Option<usize>)> {
     let lb = match range.start_bound() {
         Bound::Included(n) => *n,
         Bound::Excluded(n) => n + 1,
@@ -145,7 +143,6 @@ mod tests {
         assert_eq!(result, Some((0, None)));
     }
 
-
     #[test]
     fn infinite_range_prints_any() {
         let result = format_range(&(..));
@@ -158,13 +155,11 @@ mod tests {
         assert_eq!(&result, "any");
     }
 
-
     #[test]
     fn unbounded_lower_range_prints_lte_n() {
         let result = format_range(&(..=10));
         assert_eq!(&result, "<=10");
     }
-
 
     #[test]
     fn unbounded_upper_range_prints_gte_n() {

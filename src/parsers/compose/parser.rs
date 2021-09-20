@@ -3,8 +3,7 @@ use crate::parser::cursor::cursor::Cursor;
 use crate::parser::parse::parse::Parse;
 use crate::parser::parser::Parser;
 
-impl<TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner>
-    Parser
+impl<TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner> Parser
     for ComposeParser<TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner>
 where
     TFirstOutput: Send + Sync,
@@ -12,14 +11,11 @@ where
     TSecondOutput: Send + Sync,
     TSecond: Parser<Output = TSecondOutput>,
     TFinalOutput: Send + Sync,
-    FCombiner: (Fn(TFirstOutput, TSecondOutput) -> TFinalOutput) + Send + Sync + Clone
+    FCombiner: (Fn(TFirstOutput, TSecondOutput) -> TFinalOutput) + Send + Sync + Clone,
 {
     type Output = TFinalOutput;
-    
-    fn parse<'a>(
-        &self,
-        cursor: Option<Cursor<'a>>,
-    ) -> Parse<'a, TFinalOutput> {
+
+    fn parse<'a>(&self, cursor: Option<Cursor<'a>>) -> Parse<'a, TFinalOutput> {
         let first_parse = match self.first.parse(cursor) {
             Parse::Success(success) => success,
             Parse::Failure(failure) => {
@@ -45,8 +41,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::super::string::stringparser::StringParser;
+    use super::*;
 
     #[test]
     fn composes_strings() {

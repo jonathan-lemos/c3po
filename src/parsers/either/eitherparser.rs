@@ -2,7 +2,7 @@ use crate::parser::parser::Parser;
 use std::marker::PhantomData;
 
 /// Tries to match one parser, then tries to match the other.
-/// 
+///
 /// It tries to match the left parser first, and only runs the right if the left doesn't match.
 #[derive(Debug)]
 pub struct EitherParser<
@@ -44,7 +44,7 @@ where
     FRightMapper: (Fn(TRightOutput) -> TFinalOutput) + Send + Sync + Clone,
 {
     /// Creates a new EitherParser which returns the value given from one of the given mappers.
-    /// 
+    ///
     /// # Arguments
     /// * `left`      - The first parser to run.
     /// * `right`     - The parser to run if `left` doesn't match.
@@ -88,9 +88,9 @@ where
     TRight: Parser<Output = TRightOutput>,
 {
     /// Creates a new EitherParser which returns a `Result<TLeftOutput, TRightOutput>`.
-    /// 
+    ///
     /// The "error" case in the `Result` is not a true error, it only means that the right parser succeeded and the left one didn't.
-    /// 
+    ///
     /// # Arguments
     /// * `left`      - The first parser to run.
     /// * `right`     - The parser to run if `left` doesn't match.

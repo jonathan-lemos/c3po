@@ -1,7 +1,7 @@
-use crate::parser::parse::parse::Parse;
 use super::emptyparser::EmptyParser;
-use crate::parser::parser::Parser;
 use crate::parser::cursor::cursor::Cursor;
+use crate::parser::parse::parse::Parse;
+use crate::parser::parser::Parser;
 
 impl<TOutput, FOutputFactory> Parser for EmptyParser<TOutput, FOutputFactory>
 where

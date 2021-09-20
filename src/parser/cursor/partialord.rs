@@ -4,7 +4,7 @@ use std::ptr;
 
 impl PartialOrd for Cursor<'_> {
     /// Compares the two `pos()` values of the two Cursors.
-    /// 
+    ///
     /// Returns `None` if the two input slices are different *pointers*.
     /// This does not check the two slices for value equality.
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {

@@ -10,7 +10,7 @@ pub struct RegexParser {
 
 impl RegexParser {
     /// Creates a new `RegexParser` out of the given string.
-    /// 
+    ///
     /// # Arguments
     /// * `s` - A `fancy_regex` style regular expression. Performance is improved if this regex starts with `^`, although this is not required for this parser to function correctly.
     pub fn new<S: Into<String>>(s: S) -> RegexParser {
@@ -21,9 +21,6 @@ impl RegexParser {
 
         let kind = format!("regex({})", pattern);
 
-        RegexParser {
-            regex,
-            kind,
-        }
+        RegexParser { regex, kind }
     }
 }

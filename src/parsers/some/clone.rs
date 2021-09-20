@@ -10,7 +10,7 @@ where
         SomeParser {
             parser: self.parser.clone(),
             kind: self.kind.clone(),
-            base_kind: self.base_kind.clone()
+            base_kind: self.base_kind.clone(),
         }
     }
 }

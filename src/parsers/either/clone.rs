@@ -1,6 +1,6 @@
-use std::marker::PhantomData;
 use super::eitherparser::EitherParser;
 use crate::parser::parser::Parser;
+use std::marker::PhantomData;
 
 impl<TLeftOutput, TLeft, TRightOutput, TRight, TFinalOutput, FLeftMapper, FRightMapper> Clone
     for EitherParser<
@@ -30,7 +30,7 @@ where
             kind: self.kind.clone(),
             _first_output_marker: PhantomData,
             _second_output_marker: PhantomData,
-            _final_output_marker: PhantomData
+            _final_output_marker: PhantomData,
         }
     }
 }

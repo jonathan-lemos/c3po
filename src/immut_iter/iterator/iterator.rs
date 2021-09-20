@@ -7,12 +7,10 @@ impl<I: ImmutableIterable> Iterator for ImmutableIterator<I> {
     fn next(&mut self) -> Option<Self::Item> {
         match &self.iterable {
             None => None,
-            Some(v) => {
-                match v.next_immut() {
-                    None => self.iterable.take(),
-                    Some(next) => self.iterable.replace(next)
-                }
-            }
+            Some(v) => match v.next_immut() {
+                None => self.iterable.take(),
+                Some(next) => self.iterable.replace(next),
+            },
         }
     }
 }

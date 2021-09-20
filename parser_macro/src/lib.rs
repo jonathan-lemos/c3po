@@ -1,28 +1,23 @@
+mod add;
+mod bitor;
 mod clone;
 mod mul;
 
 use proc_macro::TokenStream;
-use quote::quote;
-use syn::{FieldsNamed, Generics, Ident, ItemStruct};
+use syn::{ItemStruct, Type};
 
 
 #[proc_macro_attribute]
-pub fn parser(_attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn parser(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let parser_type = syn::parse_macro_input!(attr as Type);
+
     let item_clone = item.clone();
     let input = syn::parse_macro_input!(item_clone as ItemStruct);
 
-    let ItemInfo {ident, generics} = get_info(input).expect("#[parser] can only be used on an enum or a struct");
-    let (impl_generics, type_generics, where_clause) = generics.split_for_impl();
+    item.extend::<TokenStream>(add::add(input.ident, input.generics, parser_type).into());
+    item.extend::<TokenStream>(bitor::bitor(input.ident, input.generics, parser_type).into());
+    item.extend::<TokenStream>(clone::impl_autoclone(input.ident, input.generics, input).into());
+    item.extend::<TokenStream>(mul::impl_mul(input.ident, input.generics, parser_type).into());
 
-    let output = quote! {
-        #item
-
-        impl #impl_generics Mul<usize> for #ident #type_generics #where_clause {
-            type Output = RepeatParser<Self>
-
-            fn mul
-        }
-    };
-
-    output.into()
+    item
 }

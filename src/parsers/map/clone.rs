@@ -1,8 +1,9 @@
-use std::marker::PhantomData;
 use super::mapparser::MapParser;
 use crate::parser::parser::Parser;
+use std::marker::PhantomData;
 
-impl<TInput, TInputParser, TOutput, FMapper> Clone for MapParser<TInput, TInputParser, TOutput, FMapper>
+impl<TInput, TInputParser, TOutput, FMapper> Clone
+    for MapParser<TInput, TInputParser, TOutput, FMapper>
 where
     TInput: Send + Sync,
     TInputParser: Parser<Output = TInput>,
@@ -15,7 +16,7 @@ where
             kind: self.kind.clone(),
             mapper: self.mapper.clone(),
             o: PhantomData,
-            i: PhantomData
+            i: PhantomData,
         }
     }
 }

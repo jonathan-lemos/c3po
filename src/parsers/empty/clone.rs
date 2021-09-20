@@ -7,7 +7,7 @@ where
 {
     fn clone(&self) -> Self {
         EmptyParser {
-            factory: self.factory.clone()
+            factory: self.factory.clone(),
         }
     }
 }

@@ -1,5 +1,5 @@
-use std::marker::PhantomData;
 use crate::parser::parser::Parser;
+use std::marker::PhantomData;
 
 /// Matches a Parser 0 or more times.
 #[derive(Debug)]
@@ -8,7 +8,7 @@ pub struct ManyParser<TOutput: Send + Sync, TParser: Parser<Output = TOutput>> {
     // this is supposedly the intended behavior
     pub(super) o: PhantomData<TOutput>,
     pub(super) parser: TParser,
-    pub(super) kind: String
+    pub(super) kind: String,
 }
 
 impl<TOutput: Send + Sync, TParser: Parser<Output = TOutput>> ManyParser<TOutput, TParser> {
@@ -18,7 +18,7 @@ impl<TOutput: Send + Sync, TParser: Parser<Output = TOutput>> ManyParser<TOutput
         ManyParser {
             parser,
             o: PhantomData,
-            kind
+            kind,
         }
     }
 }

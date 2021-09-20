@@ -3,7 +3,7 @@ use std::ptr;
 
 impl PartialEq for Cursor<'_> {
     /// Returns `true` if the input slices are the same *pointer* and the positions of both Cursors are the same.
-    /// 
+    ///
     /// This does not check that the input slices are value equal.
     fn eq(&self, other: &Self) -> bool {
         ptr::eq(self.sequence, other.sequence) && self.pos_chars == other.pos_chars

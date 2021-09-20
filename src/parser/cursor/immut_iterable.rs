@@ -8,7 +8,7 @@ impl ImmutableIterable for Cursor<'_> {
         let ret = Cursor {
             sequence: self.sequence,
             pos_bytes: self.pos_bytes + length_bytes,
-            pos_chars: self.pos_chars + 1
+            pos_chars: self.pos_chars + 1,
         };
 
         if ret.pos_bytes >= ret.sequence.len() {

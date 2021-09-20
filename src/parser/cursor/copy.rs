@@ -2,7 +2,7 @@ use super::cursor::Cursor;
 
 impl<'a> Clone for Cursor<'a> {
     fn clone(&self) -> Self {
-       *self 
+        *self
     }
 }
 

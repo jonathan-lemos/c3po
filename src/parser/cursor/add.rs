@@ -6,7 +6,7 @@ impl Add<usize> for Cursor<'_> {
     type Output = Option<Self>;
 
     /// Increments the Cursor by `n` lexemes
-    /// 
+    ///
     /// Returns `None` if the new position of the cursor is out-of-bounds.
     fn add(self, n: usize) -> Self::Output {
         (0..n).fold(Some(self), |a, _| a.and_then(|c| c.next_immut()))
@@ -17,7 +17,7 @@ impl<'a> Add<usize> for &Cursor<'a> {
     type Output = Option<Cursor<'a>>;
 
     /// Increments the Cursor by `n` lexemes
-    /// 
+    ///
     /// Returns `None` if the new position of the cursor is out-of-bounds.
     fn add(self, n: usize) -> Self::Output {
         *self + n

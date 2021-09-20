@@ -19,12 +19,9 @@ where
     }
 }
 
-impl EmptyParser<(), fn() -> ()>
-{
+impl EmptyParser<(), fn() -> ()> {
     /// Creates an EmptyParser that returns the unit value (`()`).
     pub fn new() -> Self {
-        EmptyParser {
-            factory: || (),
-        }
+        EmptyParser { factory: || () }
     }
 }

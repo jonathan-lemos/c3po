@@ -1,6 +1,6 @@
-use std::marker::PhantomData;
 use super::manyparser::ManyParser;
 use crate::parser::parser::Parser;
+use std::marker::PhantomData;
 
 impl<TOutput, TParser> Clone for ManyParser<TOutput, TParser>
 where
@@ -11,7 +11,7 @@ where
         ManyParser {
             parser: self.parser.clone(),
             kind: self.kind.clone(),
-            o: PhantomData
+            o: PhantomData,
         }
     }
 }

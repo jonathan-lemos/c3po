@@ -10,7 +10,7 @@ where
     TSecondOutput: Send + Sync,
     TSecond: Parser<Output = TSecondOutput>,
     TFinalOutput: Send + Sync,
-    FCombiner: (Fn(TFirstOutput, TSecondOutput) -> TFinalOutput) + Send + Sync + Clone
+    FCombiner: (Fn(TFirstOutput, TSecondOutput) -> TFinalOutput) + Send + Sync + Clone,
 {
     pub(super) first: TFirst,
     pub(super) second: TSecond,
@@ -29,19 +29,15 @@ where
     TSecondOutput: Send + Sync,
     TSecond: Parser<Output = TSecondOutput>,
     TFinalOutput: Send + Sync,
-    FCombiner: (Fn(TFirstOutput, TSecondOutput) -> TFinalOutput) + Clone + Send + Sync
+    FCombiner: (Fn(TFirstOutput, TSecondOutput) -> TFinalOutput) + Clone + Send + Sync,
 {
     /// Creates a new ComposeParser that combines the two results with a function.
-    /// 
+    ///
     /// # Arguments
     /// * `first`    - The first parser to run.
     /// * `second`   - The parser to run after `first`.
     /// * `combiner` - A function that combines the results of the two parsers.
-    pub fn using_combiner(
-        first: TFirst,
-        second: TSecond,
-        combiner: FCombiner,
-    ) -> Self {
+    pub fn using_combiner(first: TFirst, second: TSecond, combiner: FCombiner) -> Self {
         let kind = format!("{} + {}", first.kind(), second.kind());
 
         ComposeParser {
@@ -51,13 +47,20 @@ where
             kind,
             _first_output_marker: PhantomData,
             _second_output_marker: PhantomData,
-            _final_output_marker: PhantomData
+            _final_output_marker: PhantomData,
         }
     }
 }
 
 impl<TFirstOutput, TFirst, TSecondOutput, TSecond>
-    ComposeParser<TFirstOutput, TFirst, TSecondOutput, TSecond, (TFirstOutput, TSecondOutput), fn(TFirstOutput, TSecondOutput) -> (TFirstOutput, TSecondOutput)>
+    ComposeParser<
+        TFirstOutput,
+        TFirst,
+        TSecondOutput,
+        TSecond,
+        (TFirstOutput, TSecondOutput),
+        fn(TFirstOutput, TSecondOutput) -> (TFirstOutput, TSecondOutput),
+    >
 where
     TFirstOutput: Send + Sync,
     TFirst: Parser<Output = TFirstOutput>,
@@ -65,14 +68,11 @@ where
     TSecond: Parser<Output = TSecondOutput>,
 {
     /// Creates a new ComposeParser that combines the two results into a tuple.
-    /// 
+    ///
     /// # Arguments
     /// * `first`  - The first parser to run.
     /// * `second` - The parser to run after `first`.
-    pub fn new(
-        first: TFirst,
-        second: TSecond
-    ) -> Self {
+    pub fn new(first: TFirst, second: TSecond) -> Self {
         Self::using_combiner(first, second, |a, b| (a, b))
     }
 }

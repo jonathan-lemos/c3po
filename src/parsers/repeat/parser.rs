@@ -13,7 +13,12 @@ where
     fn parse<'a>(&self, mut cursor: Option<Cursor<'a>>) -> Parse<'a, Vec<TOutput>> {
         let (lb, ub) = match self.bounds {
             Some(s) => s,
-            None => return Parse::failure(cursor, "This parser cannot parse anything because its range has no valid values.")
+            None => {
+                return Parse::failure(
+                    cursor,
+                    "This parser cannot parse anything because its range has no valid values.",
+                )
+            }
         };
 
         let mut results = Vec::new();
@@ -33,7 +38,14 @@ where
         }
 
         if results.len() < lb {
-            Parse::failure(cursor, format!("Expected at least {} values, but was only able to parse {}", lb, results.len()))
+            Parse::failure(
+                cursor,
+                format!(
+                    "Expected at least {} values, but was only able to parse {}",
+                    lb,
+                    results.len()
+                ),
+            )
         } else {
             Parse::success(cursor, results)
         }

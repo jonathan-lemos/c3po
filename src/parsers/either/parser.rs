@@ -3,8 +3,7 @@ use crate::parser::cursor::cursor::Cursor;
 use crate::parser::parse::parse::Parse;
 use crate::parser::parser::Parser;
 
-impl<TLeftOutput, TLeft, TRightOutput, TRight, TFinalOutput, FLeftMapper, FRightMapper>
-    Parser
+impl<TLeftOutput, TLeft, TRightOutput, TRight, TFinalOutput, FLeftMapper, FRightMapper> Parser
     for EitherParser<
         TLeftOutput,
         TLeft,

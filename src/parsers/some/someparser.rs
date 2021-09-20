@@ -24,15 +24,19 @@ impl<TOutput: Send + Sync, TParser: Parser<Output = TOutput>> SomeParser<TOutput
         let kind = format!("some({})", parser.kind());
         let base_kind = parser.kind().to_string();
 
-        let compose = ComposeParser::using_combiner(parser, many, (|f, mut v| {
-            v.insert(0, f);
-            v
-        }) as fn(TOutput, Vec<TOutput>) -> Vec<TOutput>);
+        let compose = ComposeParser::using_combiner(
+            parser,
+            many,
+            (|f, mut v| {
+                v.insert(0, f);
+                v
+            }) as fn(TOutput, Vec<TOutput>) -> Vec<TOutput>,
+        );
 
         SomeParser {
             parser: compose,
             kind,
-            base_kind
+            base_kind,
         }
     }
 }
