@@ -1,3 +1,5 @@
+use syn::punctuated::Punctuated;
+use syn::token::Comma;
 use syn::ItemStruct;
 use syn::Expr;
 use syn::FieldsUnnamed;
@@ -13,7 +15,7 @@ fn get_field_names(fields: FieldsNamed) -> Vec<Ident> {
 }
 
 fn impl_autoclone_named(ident: Ident, generics: Generics, field_names: FieldsNamed) -> TokenStream {
-    let body = quote! {};
+    let mut body = quote! {};
 
     for name in get_field_names(field_names) {
         body.extend(quote! {
@@ -46,7 +48,7 @@ fn tuple_guts_clone(fields: FieldsUnnamed) -> impl Iterator<Item = Expr> {
 }
 
 fn impl_autoclone_unnamed(ident: Ident, generics: Generics, fields: FieldsUnnamed) -> TokenStream {
-    let guts = tuple_guts_clone(fields);
+    let guts: Punctuated<Expr, Comma> = tuple_guts_clone(fields).collect();
     let (impl_generics, type_generics, where_clause) = generics.split_for_impl();
 
     let quote = quote! {

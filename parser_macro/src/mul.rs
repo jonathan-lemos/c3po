@@ -7,10 +7,10 @@ pub fn impl_mul_usize(ident: Ident, generics: Generics, toutput: Type) -> TokenS
 
     let quote = quote! {
         impl #impl_generics std::ops::Mul<usize> for #ident #type_generics #where_clause {
-            type Output = RepeatParser<#toutput, Self>
+            type Output = crate::parsers::repeat::repeatparser::RepeatParser<#toutput, Self>;
 
             fn mul(self, rhs: usize) -> Self::Output {
-                crate::RepeatParser::count(self, rhs)
+                c3po::parsers::repeat::repeatparser::RepeatParser::count(self, rhs)
             }
         }
     };
@@ -18,20 +18,23 @@ pub fn impl_mul_usize(ident: Ident, generics: Generics, toutput: Type) -> TokenS
     quote.into()
 }
 
-pub fn impl_mul_range(ident: Ident, generics: Generics, toutput: Type) -> TokenStream {
+pub fn impl_mul_range(ident: Ident, mut generics: Generics, toutput: Type) -> TokenStream {
     let rangebound: GenericParam = parse_quote! {
-        __TRangeBound: RangeBounds<usize>
+        __TRangeBound: std::ops::RangeBounds<usize>
     };
 
+    let gc = generics.clone();
+    let (_, type_generics, _) = gc.split_for_impl();
+
     generics.params.push(rangebound);
-    let (impl_generics, type_generics, where_clause) = generics.split_for_impl();
+    let (impl_generics, _, where_clause) = generics.split_for_impl();
 
     let quote = quote! {
         impl #impl_generics std::ops::Mul<__TRangeBound> for #ident #type_generics #where_clause {
-            type Output = RepeatParser<#toutput, Self>
+            type Output = crate::parsers::repeat::repeatparser::RepeatParser<#toutput, Self>;
 
             fn mul(self, rhs: __TRangeBound) -> Self::Output {
-                crate::parsers::repeatparser::RepeatParser::range(self, rhs)
+                crate::parsers::repeat::repeatparser::RepeatParser::range(self, rhs)
             }
         }
     };
@@ -40,7 +43,7 @@ pub fn impl_mul_range(ident: Ident, generics: Generics, toutput: Type) -> TokenS
 }
 
 pub fn impl_mul(ident: Ident, generics: Generics, toutput: Type) -> TokenStream {
-    let t1 = impl_mul_usize(ident, generics, toutput);
-    t1.extend(impl_mul_range(ident, generics, toutput));
+    let mut t1 = impl_mul_usize(ident.clone(), generics.clone(), toutput.clone());
+    t1.extend(impl_mul_range(ident.clone(), generics.clone(), toutput.clone()));
     t1
 }

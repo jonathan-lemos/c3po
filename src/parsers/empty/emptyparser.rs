@@ -1,5 +1,7 @@
+use c3po_parser_macro::parser;
+
 /// A parser that doesn't consume any input and just returns a value.
-#[derive(Debug)]
+#[parser(TOutput)]
 pub struct EmptyParser<TOutput, FOutputFactory>
 where
     TOutput: Send + Sync,

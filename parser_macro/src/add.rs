@@ -1,7 +1,8 @@
-use syn::ExprClosure;
-use syn::token::Comma;
-use syn::Expr;
+use crate::generic_container::GenericContainer;
 use syn::punctuated::Punctuated;
+use syn::token::Comma;
+use syn::ExprClosure;
+use syn::Expr;
 use syn::TypeTuple;
 use proc_macro2::TokenStream;
 use syn::GenericParam;
@@ -20,11 +21,11 @@ fn enumerate_tuple_fields(tuple: TypeTuple, ident: Ident) -> impl Iterator<Item 
     })
 }
 
-fn concat_tuple_type(tuple: TypeTuple, other: Type) -> (TypeTuple, ExprClosure) {
+fn concat_tuple_type(mut tuple: TypeTuple, other: Type) -> (TypeTuple, ExprClosure) {
     let tuple_ident: Ident = parse_quote! {__a};
     let other_ident: Ident = parse_quote! {__b};
 
-    let tuple_guts = enumerate_tuple_fields(tuple, tuple_ident);
+    let tuple_guts: Punctuated<Expr, Comma> = enumerate_tuple_fields(tuple.clone(), tuple_ident.clone()).collect();
 
     tuple.elems.push(other);
     let typ = TypeTuple {
@@ -41,29 +42,23 @@ fn concat_tuple_type(tuple: TypeTuple, other: Type) -> (TypeTuple, ExprClosure) 
     (typ, closure)
 }
 
-pub fn add_normal(ident: Ident, generics: Generics, toutput: Type) -> TokenStream {
-    let totheroutput: GenericParam = parse_quote! {
-        __TOtherOutput
-    };
-
-    let parserbound: GenericParam = parse_quote! {
-        __TOtherParser: Parser<Output = #totheroutput>
-    };
+fn add_normal(ident: Ident, generics: Generics, toutput: Type) -> TokenStream {
+    let mut gc = GenericContainer::new(generics);
+    let totheroutput = gc.push(parse_quote! {__TOtherOutput}, parse_quote!{Send + Sync});
+    let totherparser = gc.push(parse_quote! {__TOtherParser}, parse_quote!{crate::parser::parser::Parser<Output = #totheroutput>});
 
     let tfinaloutput: Type = parse_quote! {
         (#toutput, #totheroutput)
     };
 
-    generics.params.push(totheroutput);
-    generics.params.push(parserbound);
-    let (impl_generics, type_generics, where_clause) = generics.split_for_impl();
+    let (impl_generics, type_generics, where_clause) = gc.split_for_impl();
 
     let quote = quote! {
         impl #impl_generics std::ops::Add<__TOtherParser> for #ident #type_generics #where_clause {
-            type Output = ComposeParser<#toutput, Self, #totheroutput, #parserbound, #tfinaloutput, fn(#toutput, #totheroutput) -> #tfinaloutput>;
+            type Output = crate::parsers::compose::composeparser::ComposeParser<#toutput, Self, #totheroutput, #totherparser, #tfinaloutput, fn(#toutput, #totheroutput) -> #tfinaloutput>;
 
             fn add(self, rhs: __TOtherParser) -> Self::Output {
-                ComposeParser::new(self, rhs);
+                crate::parsers::compose::composeparser::ComposeParser::new(self, rhs)
             }
         }
     };
@@ -71,31 +66,38 @@ pub fn add_normal(ident: Ident, generics: Generics, toutput: Type) -> TokenStrea
     quote.into()
 }
 
-pub fn add_tuple(ident: Ident, generics: Generics, toutput: TypeTuple) -> TokenStream {
+fn add_tuple(ident: Ident, mut generics: Generics, toutput: TypeTuple) -> TokenStream {
     let totheroutput: GenericParam = parse_quote! {
-        __TOtherOutput
+        __TOtherOutput: Send + Sync
     };
 
     let totheroutputtype: Type = parse_quote! {
         __TOtherOutput
     };
 
-    let parserbound: GenericParam = parse_quote! {
-        __TOtherParser: Parser<Output = #totheroutput>
+    let parsertype: GenericParam = parse_quote! {
+        __TOtherParser
     };
 
-    let (tfinaloutput, combiner) = concat_tuple_type(toutput, totheroutputtype);
+    let parserbound: GenericParam = parse_quote! {
+        __TOtherParser: crate::parser::parser::Parser<Output = #totheroutput>
+    };
 
-    generics.params.push(totheroutput);
-    generics.params.push(parserbound);
-    let (impl_generics, type_generics, where_clause) = generics.split_for_impl();
+    let (tfinaloutput, combiner) = concat_tuple_type(toutput.clone(), totheroutputtype.clone());
+
+    let gc = generics.clone();
+    let (_, type_generics, _) = gc.split_for_impl();
+
+    generics.params.push(totheroutput.clone());
+    generics.params.push(parserbound.clone());
+    let (impl_generics, _, where_clause) = generics.split_for_impl();
 
     let quote = quote! {
         impl #impl_generics std::ops::Add<__TOtherParser> for #ident #type_generics #where_clause {
-            type Output = ComposeParser<#toutput, Self, #totheroutput, #parserbound, #tfinaloutput, fn(#toutput, #totheroutput) -> #tfinaloutput>;
+            type Output = crate::parsers::compose::composeparser::ComposeParser<#toutput, Self, #totheroutput, #parsertype, #tfinaloutput, fn(#toutput, #totheroutput) -> #tfinaloutput>;
 
             fn add(self, rhs: __TOtherParser) -> Self::Output {
-                ComposeParser::with_combiner(self, rhs, #combiner);
+                crate::parsers::compose::composeparser::ComposeParser::with_combiner(self, rhs, #combiner)
             }
         }
     };
@@ -107,5 +109,20 @@ pub fn add(ident: Ident, generics: Generics, toutput: Type) -> TokenStream {
     match toutput {
         syn::Type::Tuple(tt) => add_tuple(ident, generics, tt),
         _ => add_normal(ident, generics, toutput)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use syn::File;
+
+    #[test]
+    fn add_compiles() {
+        let output = add(parse_quote!{Foo}, parse_quote!{<T1, TS: Into<String>>}, parse_quote!{i32});
+        let file = syn::parse2::<File>(output);
+
+        assert!(file.is_ok());
     }
 }
