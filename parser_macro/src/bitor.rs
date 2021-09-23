@@ -1,36 +1,41 @@
+use crate::generic_container::GenericContainer;
 use proc_macro2::TokenStream;
-use syn::GenericParam;
 use syn::Generics;
 use syn::Ident;
 use syn::Type;
 use syn::parse_quote;
 use quote::quote;
 
-pub fn bitor(ident: Ident, mut generics: Generics, toutput: Type) -> TokenStream {
-    let totheroutput: GenericParam = parse_quote! {
-        __TOtherOutput
-    };
+pub fn bitor(ident: Ident, generics: Generics, toutput: Type) -> TokenStream {
+    let mut gc = GenericContainer::new(generics);
+    let totheroutput = gc.push_bounded(parse_quote! {__TOtherOutput}, parse_quote!{Send + Sync});
+    let totherparser = gc.push_bounded(parse_quote! {__TOtherParser}, parse_quote!{crate::parser::parser::Parser<Output = #totheroutput>});
 
-    let parserbound: GenericParam = parse_quote! {
-        __TOtherParser: crate::parser::parser::Parser<Output = #totheroutput>
-    };
-
-    let gc = generics.clone();
-    let (_, type_generics, _) = gc.split_for_impl();
-
-    generics.params.push(totheroutput.clone());
-    generics.params.push(parserbound.clone());
-    let (impl_generics, _, where_clause) = generics.split_for_impl();
+    let (impl_generics, type_generics, where_clause) = gc.split_for_impl();
 
     let quote = quote! {
-        impl #impl_generics std::ops::BitOr<__TOtherParser> for #ident #type_generics #where_clause {
-            type Output = EitherParser<#toutput, Self, #totheroutput, __TOtherParser, Result<#toutput, #totheroutput>, fn(#toutput) -> Result<#toutput, #totheroutput>, fn(#totheroutput) -> Result<#toutput, #totheroutput>>;
+        impl #impl_generics std::ops::BitOr<#totherparser> for #ident #type_generics #where_clause {
+            type Output = crate::parsers::either::eitherparser::EitherParser<#toutput, Self, #totheroutput, #totherparser, Result<#toutput, #totheroutput>, fn(#toutput) -> Result<#toutput, #totheroutput>, fn(#totheroutput) -> Result<#toutput, #totheroutput>>;
 
             fn bitor(self, rhs: __TOtherParser) -> Self::Output {
-                EitherParser::new(self, rhs)
+                crate::parsers::either::eitherparser::EitherParser::new(self, rhs)
             }
         }
     };
 
     quote.into()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use syn::ItemImpl;
+
+    #[test]
+    fn bitor_compiles() {
+        let output = bitor(parse_quote!{Foo}, parse_quote!{<T1, TS: Into<String>>}, parse_quote!{i32});
+        let impl_block = syn::parse2::<ItemImpl>(output);
+
+        assert!(impl_block.is_ok());
+    }
 }

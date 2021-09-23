@@ -1,9 +1,10 @@
 use super::super::compose::composeparser::ComposeParser;
 use super::super::many::manyparser::ManyParser;
 use crate::parser::parser::Parser;
+use c3po_parser_macro::parser;
 
 /// Matches a `Parser` 1 or more times.
-#[derive(Debug)]
+#[parser(Vec<TOutput>)]
 pub struct SomeParser<TOutput: Send + Sync, TParser: Parser<Output = TOutput>> {
     pub(super) parser: ComposeParser<
         TOutput,

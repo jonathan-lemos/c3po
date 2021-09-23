@@ -1,10 +1,11 @@
 use crate::parser::parser::Parser;
 use std::marker::PhantomData;
+use c3po_parser_macro::parser;
 
 /// Tries to match one parser, then tries to match the other.
 ///
 /// It tries to match the left parser first, and only runs the right if the left doesn't match.
-#[derive(Debug)]
+#[parser(TFinalOutput)]
 pub struct EitherParser<
     TLeftOutput,
     TLeft,

@@ -1,8 +1,9 @@
 use crate::parser::parser::Parser;
 use std::marker::PhantomData;
+use c3po_parser_macro::parser;
 
 /// Composes two parsers, matching the first parser and then the second parser, returning both results.
-#[derive(Debug)]
+#[parser(TFinalOutput)]
 pub struct ComposeParser<TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner>
 where
     TFirstOutput: Send + Sync,

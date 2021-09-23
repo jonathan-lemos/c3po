@@ -19,7 +19,7 @@ fn impl_autoclone_named(ident: Ident, generics: Generics, field_names: FieldsNam
 
     for name in get_field_names(field_names) {
         body.extend(quote! {
-            #name: #name.clone(),
+            #name: self.#name.clone(),
         });
     }
 
@@ -76,10 +76,32 @@ fn impl_autoclone_unit(ident: Ident, generics: Generics) -> TokenStream {
     quote.into()
 }
 
-pub fn impl_autoclone(ident: Ident, generics: Generics, type_struct: ItemStruct) -> TokenStream {
+pub fn impl_autoclone(type_struct: ItemStruct) -> TokenStream {
+    let ident = type_struct.ident;
+    let generics = type_struct.generics;
+
     match type_struct.fields {
         syn::Fields::Named(n) => impl_autoclone_named(ident, generics, n),
         syn::Fields::Unnamed(u) => impl_autoclone_unnamed(ident, generics, u),
         syn::Fields::Unit => impl_autoclone_unit(ident, generics)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use syn::ItemImpl;
+
+    #[test]
+    fn clone_compiles_for_named_struct() {
+        let output = impl_autoclone(parse_quote!{
+            struct Foo<T1, TS: Into<String>> {
+                thing: Vec<T1>,
+                thang: TS
+            }
+        });
+        let impl_block = syn::parse2::<ItemImpl>(output);
+
+        assert!(impl_block.is_ok());
     }
 }

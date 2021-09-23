@@ -1,8 +1,9 @@
 use crate::parser::parser::Parser;
 use std::marker::PhantomData;
+use c3po_parser_macro::parser;
 
 /// Matches a Parser 0 or more times.
-#[derive(Debug)]
+#[parser(TOutput)]
 pub struct MapParser<TInput, TInputParser, TOutput, FMapper>
 where
     TInput: Send + Sync,

@@ -1,8 +1,9 @@
 use fancy_regex::Regex;
 use std::str::FromStr;
+use c3po_parser_macro::parser;
 
 /// Matches the input using a regular expression.
-#[derive(Debug, Clone)]
+#[parser(String)]
 pub struct RegexParser {
     pub(super) regex: Regex,
     pub(super) kind: String,

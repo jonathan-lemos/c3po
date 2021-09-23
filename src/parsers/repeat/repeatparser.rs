@@ -2,9 +2,10 @@ use crate::parser::parser::Parser;
 use std::marker::PhantomData;
 use std::ops::Bound;
 use std::ops::RangeBounds;
+use c3po_parser_macro::parser;
 
-/// Matches a Parser 0 or more times.
-#[derive(Debug)]
+/// Matches a Parser a given amount of times.
+#[parser(Vec<TOutput>)]
 pub struct RepeatParser<TOutput, TParser>
 where
     TOutput: Send + Sync,

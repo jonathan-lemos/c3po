@@ -5,7 +5,6 @@ use syn::ExprClosure;
 use syn::Expr;
 use syn::TypeTuple;
 use proc_macro2::TokenStream;
-use syn::GenericParam;
 use syn::Generics;
 use syn::Ident;
 use syn::Type;
@@ -44,8 +43,8 @@ fn concat_tuple_type(mut tuple: TypeTuple, other: Type) -> (TypeTuple, ExprClosu
 
 fn add_normal(ident: Ident, generics: Generics, toutput: Type) -> TokenStream {
     let mut gc = GenericContainer::new(generics);
-    let totheroutput = gc.push(parse_quote! {__TOtherOutput}, parse_quote!{Send + Sync});
-    let totherparser = gc.push(parse_quote! {__TOtherParser}, parse_quote!{crate::parser::parser::Parser<Output = #totheroutput>});
+    let totheroutput = gc.push_bounded(parse_quote! {__TOtherOutput}, parse_quote!{Send + Sync});
+    let totherparser = gc.push_bounded(parse_quote! {__TOtherParser}, parse_quote!{crate::parser::parser::Parser<Output = #totheroutput>});
 
     let tfinaloutput: Type = parse_quote! {
         (#toutput, #totheroutput)
@@ -54,7 +53,7 @@ fn add_normal(ident: Ident, generics: Generics, toutput: Type) -> TokenStream {
     let (impl_generics, type_generics, where_clause) = gc.split_for_impl();
 
     let quote = quote! {
-        impl #impl_generics std::ops::Add<__TOtherParser> for #ident #type_generics #where_clause {
+        impl #impl_generics std::ops::Add<#totherparser> for #ident #type_generics #where_clause {
             type Output = crate::parsers::compose::composeparser::ComposeParser<#toutput, Self, #totheroutput, #totherparser, #tfinaloutput, fn(#toutput, #totheroutput) -> #tfinaloutput>;
 
             fn add(self, rhs: __TOtherParser) -> Self::Output {
@@ -66,35 +65,18 @@ fn add_normal(ident: Ident, generics: Generics, toutput: Type) -> TokenStream {
     quote.into()
 }
 
-fn add_tuple(ident: Ident, mut generics: Generics, toutput: TypeTuple) -> TokenStream {
-    let totheroutput: GenericParam = parse_quote! {
-        __TOtherOutput: Send + Sync
-    };
+fn add_tuple(ident: Ident, generics: Generics, toutput: TypeTuple) -> TokenStream {
+    let mut gc = GenericContainer::new(generics);
+    let totheroutput = gc.push_bounded(parse_quote! {__TOtherOutput}, parse_quote!{Send + Sync});
+    let totherparser = gc.push_bounded(parse_quote! {__TOtherParser}, parse_quote!{crate::parser::parser::Parser<Output = #totheroutput>});
 
-    let totheroutputtype: Type = parse_quote! {
-        __TOtherOutput
-    };
-
-    let parsertype: GenericParam = parse_quote! {
-        __TOtherParser
-    };
-
-    let parserbound: GenericParam = parse_quote! {
-        __TOtherParser: crate::parser::parser::Parser<Output = #totheroutput>
-    };
-
-    let (tfinaloutput, combiner) = concat_tuple_type(toutput.clone(), totheroutputtype.clone());
-
-    let gc = generics.clone();
-    let (_, type_generics, _) = gc.split_for_impl();
-
-    generics.params.push(totheroutput.clone());
-    generics.params.push(parserbound.clone());
-    let (impl_generics, _, where_clause) = generics.split_for_impl();
+    let (tfinaloutput, combiner) = concat_tuple_type(toutput.clone(), totheroutput.clone());
+    
+    let (impl_generics, type_generics, where_clause) = gc.split_for_impl();
 
     let quote = quote! {
-        impl #impl_generics std::ops::Add<__TOtherParser> for #ident #type_generics #where_clause {
-            type Output = crate::parsers::compose::composeparser::ComposeParser<#toutput, Self, #totheroutput, #parsertype, #tfinaloutput, fn(#toutput, #totheroutput) -> #tfinaloutput>;
+        impl #impl_generics std::ops::Add<#totherparser> for #ident #type_generics #where_clause {
+            type Output = crate::parsers::compose::composeparser::ComposeParser<#toutput, Self, #totheroutput, #totherparser, #tfinaloutput, fn(#toutput, #totheroutput) -> #tfinaloutput>;
 
             fn add(self, rhs: __TOtherParser) -> Self::Output {
                 crate::parsers::compose::composeparser::ComposeParser::with_combiner(self, rhs, #combiner)
@@ -115,14 +97,13 @@ pub fn add(ident: Ident, generics: Generics, toutput: Type) -> TokenStream {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    use syn::File;
+    use syn::ItemImpl;
 
     #[test]
     fn add_compiles() {
         let output = add(parse_quote!{Foo}, parse_quote!{<T1, TS: Into<String>>}, parse_quote!{i32});
-        let file = syn::parse2::<File>(output);
+        let impl_block = syn::parse2::<ItemImpl>(output);
 
-        assert!(file.is_ok());
+        assert!(impl_block.is_ok());
     }
 }

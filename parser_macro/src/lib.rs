@@ -17,7 +17,7 @@ pub fn parser(attr: TokenStream, mut item: TokenStream) -> TokenStream {
 
     item.extend::<TokenStream>(add::add(input.ident.clone(), input.generics.clone(), parser_type.clone()).into());
     item.extend::<TokenStream>(bitor::bitor(input.ident.clone(), input.generics.clone(), parser_type.clone()).into());
-    item.extend::<TokenStream>(clone::impl_autoclone(input.ident.clone(), input.generics.clone(), input.clone()).into());
+    item.extend::<TokenStream>(clone::impl_autoclone(input.clone()).into());
     item.extend::<TokenStream>(mul::impl_mul(input.ident.clone(), input.generics.clone(), parser_type.clone()).into());
 
     item

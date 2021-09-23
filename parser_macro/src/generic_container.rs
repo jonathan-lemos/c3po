@@ -1,5 +1,4 @@
 use syn::Ident;
-use proc_macro2::TokenStream;
 use syn::Type;
 use syn::WhereClause;
 use syn::TypeGenerics;
@@ -8,7 +7,6 @@ use syn::token::Add;
 use syn::TypeParamBound;
 use syn::punctuated::Punctuated;
 use syn::TypeParam;
-use quote::ToTokens;
 use syn::Generics;
 use syn::parse_quote;
 
@@ -25,13 +23,22 @@ impl GenericContainer {
         }
     }
 
-    pub fn push(&mut self, ident: Ident, bounds: Punctuated<TypeParamBound, Add>) -> Type {
+    #[allow(dead_code)]
+    pub fn push(&mut self, ident: Ident) -> Type {
+        let param: TypeParam = parse_quote! {
+            #ident
+        };
+
+        self.new_generics.params.push(syn::GenericParam::Type(param));
+        parse_quote! {#ident}
+    }
+
+    pub fn push_bounded(&mut self, ident: Ident, bounds: Punctuated<TypeParamBound, Add>) -> Type {
         let param: TypeParam = parse_quote! {
             #ident: #bounds
         };
 
         self.new_generics.params.push(syn::GenericParam::Type(param));
-
         parse_quote! {#ident}
     }
 
