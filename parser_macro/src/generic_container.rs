@@ -10,6 +10,7 @@ use syn::TypeParam;
 use syn::Generics;
 use syn::parse_quote;
 
+#[derive(Clone)]
 pub struct GenericContainer {
     original_generics: Generics,
     new_generics: Generics
