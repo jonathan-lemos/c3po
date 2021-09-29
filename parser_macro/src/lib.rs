@@ -2,6 +2,7 @@ mod add;
 mod bitand;
 mod bitor;
 mod clone;
+mod common;
 mod generic_container;
 mod mul;
 
@@ -22,4 +23,9 @@ pub fn parser(attr: TokenStream, mut item: TokenStream) -> TokenStream {
     item.extend::<TokenStream>(mul::impl_mul(input.ident.clone(), input.generics.clone(), parser_type.clone()).into());
 
     item
+}
+
+#[proc_macro]
+pub fn parser_add(_: TokenStream) -> TokenStream {
+    bitand::impl_bitand().into()
 }

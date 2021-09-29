@@ -24,7 +24,7 @@ pub fn impl_mul_usize(ident: Ident, generics: Generics, toutput: Type) -> TokenS
 pub fn impl_mul_range(ident: Ident, generics: Generics, toutput: Type) -> TokenStream {
     let mut gc = GenericContainer::new(generics);
 
-    gc.push_bounded(parse_quote! {__TRangeBound}, parse_quote! {std::ops::RangeBounds<usize>});
+    gc.push_bounded("__TRangeBound", parse_quote! {std::ops::RangeBounds<usize>});
 
     let (impl_generics, type_generics, where_clause) = gc.split_for_impl();
 

@@ -8,8 +8,8 @@ use quote::quote;
 
 pub fn impl_add(ident: Ident, generics: Generics, toutput: Type) -> TokenStream {
     let mut gc = GenericContainer::new(generics);
-    let totheroutput = gc.push_bounded(parse_quote! {__TOtherOutput}, parse_quote!{Send + Sync});
-    let totherparser = gc.push_bounded(parse_quote! {__TOtherParser}, parse_quote!{crate::parser::parser::Parser<Output = #totheroutput>});
+    let totheroutput = gc.push_bounded("__TOtherOutput", parse_quote!{Send + Sync});
+    let totherparser = gc.push_bounded("__TOtherParser", parse_quote!{crate::parser::parser::Parser<Output = #totheroutput>});
 
     let tfinaloutput: Type = parse_quote! {
         (#toutput, #totheroutput)
