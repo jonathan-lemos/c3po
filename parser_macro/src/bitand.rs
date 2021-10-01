@@ -1,6 +1,5 @@
 use proc_macro2::Span;
 use proc_macro2::TokenStream;
-use syn::Ident;
 use crate::generic_container::GenericContainer;
 use syn::Expr;
 use syn::punctuated::Punctuated;
@@ -97,7 +96,6 @@ mod tests {
     #[test]
     pub fn bitand_compiles() {
         let tokens = impl_bitand();
-        println!("{}", tokens.clone().to_string());
 
         let file = syn::parse2::<File>(tokens);
         assert!(file.is_ok());

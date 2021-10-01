@@ -11,7 +11,6 @@ use syn::TypeParamBound;
 use syn::punctuated::Punctuated;
 use syn::Generics;
 use syn::parse_quote;
-use quote::quote;
 
 #[derive(Clone)]
 pub struct GenericContainer {
@@ -23,8 +22,6 @@ pub struct GenericContainer {
 
 impl GenericContainer {
     pub fn new(generics: Generics) -> Self {
-        let orig = generics.clone();
-
         let other = generics.clone().params.into_iter().filter(|x| match x {
             syn::GenericParam::Type(_) => false,
             _ => true
@@ -57,11 +54,12 @@ impl GenericContainer {
         syn::parse2(string.parse().unwrap()).unwrap()
     }
 
+    #[allow(dead_code)]
     pub fn remove<S: Into<String>>(&mut self, ident: S) -> bool {
         self.new_type_generics.remove(&ident.into()).is_some()
     }
 
-    fn new_generics(&self) -> Generics {
+    fn new_generics(&mut self) -> Generics {
         let mut tmp = self.new_other_generics.clone();
 
         let t = self.new_type_generics.iter().map(|(a, b)| {
@@ -76,7 +74,9 @@ impl GenericContainer {
         });
 
         tmp.extend(t);
-        parse_quote! {<#tmp>}
+        let mut g: Generics = parse_quote! {<#tmp>};
+        g.make_where_clause().predicates.extend(self.original_generics.make_where_clause().predicates.clone());
+        g
     }
 
     pub fn split_for_impl(&mut self) -> (ImplGenerics<'_>, TypeGenerics<'_>, Option<&WhereClause>) {
