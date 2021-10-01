@@ -2,6 +2,7 @@ use super::composeparser::ComposeParser;
 use crate::parser::cursor::cursor::Cursor;
 use crate::parser::parse::parse::Parse;
 use crate::parser::parser::Parser;
+use c3po_parser_macro::parser_add;
 
 impl<TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner> Parser
     for ComposeParser<TFirstOutput, TFirst, TSecondOutput, TSecond, TFinalOutput, FCombiner>
@@ -38,6 +39,8 @@ where
         &self.kind
     }
 }
+
+parser_add!();
 
 #[cfg(test)]
 mod tests {
