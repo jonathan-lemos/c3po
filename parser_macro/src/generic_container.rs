@@ -54,6 +54,10 @@ impl GenericContainer {
         syn::parse2(string.parse().unwrap()).unwrap()
     }
 
+    pub fn push_send_sync<S: Into<String>>(&mut self, ident: S) -> Type {
+        self.push_bounded(ident, parse_quote! {Send + Sync})
+    }
+
     #[allow(dead_code)]
     pub fn remove<S: Into<String>>(&mut self, ident: S) -> bool {
         self.new_type_generics.remove(&ident.into()).is_some()

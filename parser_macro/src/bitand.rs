@@ -1,28 +1,33 @@
+use crate::common::push_new_parser;
+use crate::common::push_parser;
+use crate::common::ParserType;
+use crate::generic_container::GenericContainer;
 use proc_macro2::Span;
 use proc_macro2::TokenStream;
-use crate::generic_container::GenericContainer;
-use syn::Expr;
-use syn::punctuated::Punctuated;
-use syn::Type;
-use syn::ExprClosure;
-use syn::TypeTuple;
-use syn::parse_quote;
-use syn::ItemImpl;
-use syn::token::Comma;
-use syn::LitInt;
 use quote::ToTokens;
+use syn::parse_quote;
+use syn::punctuated::Punctuated;
+use syn::token::Comma;
+use syn::Expr;
+use syn::ExprClosure;
+use syn::ItemImpl;
+use syn::LitInt;
+use syn::Type;
+use syn::TypeTuple;
 
-fn append_to_tuple(tuple: TypeTuple, other: Type) -> (TypeTuple, ExprClosure) {
+fn append_to_tuple(tuple: &TypeTuple, other: &Type) -> (TypeTuple, ExprClosure) {
     let mut guts = tuple.elems.clone();
-    guts.push(other);
+    guts.push(other.clone());
 
     let new_type: TypeTuple = parse_quote! {(#guts)};
 
-    let old_guts: Punctuated<Expr, Comma> = (0..tuple.elems.len()).map(|i| {
-        let num = LitInt::new(&i.to_string(), Span::call_site());
-        let expr: Expr = parse_quote!{a.#num};
-        expr
-    }).collect();
+    let old_guts: Punctuated<Expr, Comma> = (0..tuple.elems.len())
+        .map(|i| {
+            let num = LitInt::new(&i.to_string(), Span::call_site());
+            let expr: Expr = parse_quote! {a.#num};
+            expr
+        })
+        .collect();
 
     let closure: ExprClosure = parse_quote! {
         |a, b| {
@@ -33,13 +38,32 @@ fn append_to_tuple(tuple: TypeTuple, other: Type) -> (TypeTuple, ExprClosure) {
     (new_type, closure)
 }
 
-fn compose_parser_for(toutput: Type, tleftparser: Type, trightoutput: Type, trightparser: Type, tfinaloutput: TypeTuple) -> Type {
+fn compose_parser_for(
+    leftparser: &ParserType,
+    rightparser: &ParserType,
+    tfinaloutput: &TypeTuple,
+) -> Type {
+    let ParserType {
+        inner: tlo,
+        parser: tlp,
+    } = leftparser;
+    let ParserType {
+        inner: tro,
+        parser: trp,
+    } = rightparser;
+
     parse_quote! {
-        crate::parsers::compose::composeparser::ComposeParser<#toutput, #tleftparser, #trightoutput, #trightparser, #tfinaloutput, fn(#toutput, #trightoutput) -> #tfinaloutput>
+        crate::parsers::compose::composeparser::ComposeParser<#tlo, #tlp, #tro, #trp, #tfinaloutput, fn(#tlo, #tro) -> #tfinaloutput>
     }
 }
 
-fn impl_bitand_for(impl_for: Type, totherparser: Type, output_parser: Type, generics: &mut GenericContainer, closure: ExprClosure) -> ItemImpl {
+fn impl_bitand_for(
+    impl_for: &Type,
+    totherparser: &Type,
+    output_parser: &Type,
+    generics: &mut GenericContainer,
+    closure: &ExprClosure,
+) -> ItemImpl {
     let (impl_generics, _, where_clause) = generics.split_for_impl();
 
     parse_quote! {
@@ -57,35 +81,71 @@ fn make_type(n: usize) -> String {
     format!("__T{}", n)
 }
 
+struct BitandImplState<'a, 'b> {
+    token_stream: &'b mut TokenStream,
+    gc: &'a mut GenericContainer,
+    impl_for: Type,
+    bitand_output: TypeTuple,
+}
+
+fn impl_bitand_iteration<'a, 'b>(state: BitandImplState<'a, 'b>, n: usize) -> BitandImplState<'a, 'b> {
+    let BitandImplState {
+        token_stream,
+        gc,
+        impl_for,
+        bitand_output
+    } = state;
+
+    let nextparser = push_new_parser(gc, make_type(n), "__TNextParser");
+
+    let tfinalparser = ParserType {
+        inner: syn::Type::Tuple(bitand_output.clone()),
+        parser: parse_quote! {Self},
+    };
+
+    let (tuple_type_next, appender) = append_to_tuple(&bitand_output, &nextparser.inner);
+    let new_compose_parser = compose_parser_for(&tfinalparser, &nextparser, &tuple_type_next);
+
+    let impl_block = impl_bitand_for(
+        &impl_for,
+        &nextparser.parser,
+        &new_compose_parser,
+        gc,
+        &appender,
+    );
+    impl_block.to_tokens(token_stream);
+
+    let tl = push_parser(gc, &bitand_output, "__TLeftParser");
+    let tr = push_parser(gc, &nextparser.inner, "__TRightParser");
+
+    BitandImplState {
+        token_stream,
+        gc,
+        impl_for: compose_parser_for(&tl, &tr, &tuple_type_next),
+        bitand_output: tuple_type_next
+    }
+}
+
 pub fn impl_bitand() -> TokenStream {
     let mut ts = TokenStream::new();
-
     let mut gc = GenericContainer::new(parse_quote! {});
-    let t0 = gc.push_bounded(make_type(0), parse_quote! {Send + Sync});
-    let tleftparser = gc.push_bounded("__TLeftParser", parse_quote!{crate::parser::parser::Parser<Output = #t0>});
 
-    let t1 = gc.push_bounded(make_type(1), parse_quote! {Send + Sync});
-    let trightparser = gc.push_bounded("__TRightParser", parse_quote!{crate::parser::parser::Parser<Output = #t1>});
+    let leftparser = push_new_parser(&mut gc, make_type(0), "__TLeftParser");
+    let rightparser = push_new_parser(&mut gc, make_type(1), "__TRightParser");
 
-    let mut tuple_type: TypeTuple = parse_quote!{(#t0, #t1)};
-    let mut compose_parser_type = compose_parser_for(t0.clone(), tleftparser.clone(), t1.clone(), trightparser.clone(), tuple_type.clone());
+    let (t0, t1) = (&leftparser.inner, &rightparser.inner);
+    let bitand_output: TypeTuple = parse_quote! {(#t0, #t1)};
 
-    for i in 2..32 {
-        let tnext = gc.push_bounded(make_type(i), parse_quote! {Send + Sync});
-        let tnextparser = gc.push_bounded("__TNextParser", parse_quote!{crate::parser::parser::Parser<Output = #tnext>});
+    let impl_for = compose_parser_for(&leftparser, &rightparser, &bitand_output);
 
-        let (tuple_type_next, appender) = append_to_tuple(tuple_type.clone(), tnext.clone());
-        // this needs to have a parser returning tnext
-        let new_compose_parser = compose_parser_for(syn::Type::Tuple(tuple_type.clone()), parse_quote! {Self}, tnext.clone(), tnextparser.clone(), tuple_type_next.clone());
+    let initial_state = BitandImplState {
+        token_stream: &mut ts,
+        gc: &mut gc,
+        bitand_output,
+        impl_for
+    };
 
-        let impl_block = impl_bitand_for(compose_parser_type.clone(), tnextparser.clone(), new_compose_parser.clone(), &mut gc, appender);
-        impl_block.to_tokens(&mut ts);
-
-        let tl = gc.push_bounded("__TLeftParser", parse_quote!{crate::parser::parser::Parser<Output = #tuple_type>});
-        let tr = gc.push_bounded("__TRightParser", parse_quote!{crate::parser::parser::Parser<Output = #tnext>});
-        compose_parser_type = compose_parser_for(syn::Type::Tuple(tuple_type.clone()), tl.clone(), tnext.clone(), tr.clone(), tuple_type_next.clone());
-        tuple_type = tuple_type_next;
-    }
+    (2..32).fold(initial_state, impl_bitand_iteration);   
 
     ts
 }
